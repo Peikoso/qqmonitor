@@ -1,0 +1,91 @@
+services:
+  # Banco de dados PostgreSQL
+  qqmonitor_database:
+    image: postgres:16-alpine
+    container_name: qqmonitor_database
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    env_file:
+      - .env
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB}
+    ports:
+      - "${POSTGRES_PORT}:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+
+  # API Node.js
+  qqmonitor_api:
+    build:
+      context: ./qqtech9-backend
+      dockerfile: dockerfile
+    container_name: qqmonitor_api
+    depends_on:
+      qqmonitor_database:
+        condition: service_healthy
+    ports:
+      - "${PORT}:${PORT}"
+    environment:
+      DATABASE_URL: postgres://${POSTGRES_USER}:${POSTGRES_PASSWORD}@${DB_HOST}:${POSTGRES_PORT}/${POSTGRES_DB}
+      PORT: ${PORT}
+      SERVICE_PATH: ${SERVICE_PATH}
+      DEFAULT_PASSWORD: ${DEFAULT_PASSWORD}
+    env_file:
+      - .env
+    command: ["node", "src/main.js"]
+    volumes:
+      - ./qqtech9-backend:/qqtech9-backend
+    healthcheck:
+      test: ["CMD-SHELL", "wget --no-verbose --tries=1 --spider http://localhost:${PORT}/api/v1/health || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+
+
+  # Python Worker - Runner Scheduler
+  qqmonitor_runner_scheduler:
+    build:
+      context: ./python-workers
+      dockerfile: Dockerfile
+    container_name: qqmonitor_runner_scheduler
+    depends_on:
+      qqmonitor_database:
+        condition: service_healthy
+      qqmonitor_api:
+        condition: service_healthy
+    environment:
+      DATABASE_URL: postgresql+asyncpg://${POSTGRES_USER}:${POSTGRES_PASSWORD}@${DB_HOST}:${POSTGRES_PORT}/${POSTGRES_DB}
+    env_file:
+      - .env
+    command: ["python", "-u", "-m", "worker.runner_scheduler"]
+    volumes:
+      - ./python-workers:/python-workers
+
+  # Python Worker - Runner Worker
+  qqmonitor_runner_worker:
+    build:
+      context: ./python-workers
+      dockerfile: Dockerfile
+    container_name: qqmonitor_runner_worker
+    depends_on:
+      qqmonitor_database:
+        condition: service_healthy
+      qqmonitor_api:
+        condition: service_healthy
+    environment:
+      DATABASE_URL: postgresql+asyncpg://${POSTGRES_USER}:${POSTGRES_PASSWORD}@${DB_HOST}:${POSTGRES_PORT}/${POSTGRES_DB}
+    env_file:
+      - .env
+    command: ["python", "-u", "-m", "worker.runner_worker"]
+    volumes:
+      - ./python-workers:/python-workers
+
+volumes:
+  pgdata:

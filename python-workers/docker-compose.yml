@@ -1,0 +1,22 @@
+services:
+  scheduler:
+    build: .
+    container_name: runner_scheduler
+    command: ["python", "-u", "-m", "worker.runner_scheduler"]
+    volumes:
+      - .:/python-workers
+    environment:
+      PYTHONPATH: /python-workers
+      DATABASE_URL: ${DATABASE_URL}
+    restart: always
+
+  worker:
+    build: .
+    container_name: runner_worker
+    command: ["python", "-u", "-m", "worker.runner_worker"]
+    volumes:
+      - .:/python-workers
+    environment:
+      PYTHONPATH: /python-workers
+      DATABASE_URL: ${DATABASE_URL}
+    restart: always

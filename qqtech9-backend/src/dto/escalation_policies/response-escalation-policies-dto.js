@@ -1,0 +1,12 @@
+export class ResponseEscalationPolicy {
+    constructor(escalationPolicy) {
+        this.id = escalationPolicy.id;
+        this.timeoutMs = escalationPolicy.timeoutMs;
+        this.roleId = escalationPolicy.roleId;
+        this.isActive = escalationPolicy.isActive;
+    }
+
+    static fromArray(escalationPolicies) {
+        return escalationPolicies.map(escalationPolicy => new ResponseEscalationPolicy(escalationPolicy));
+    }
+}

@@ -1,0 +1,189 @@
+import { pool } from '../config/database-conn.js'
+import { Incidents, IncidentsLogs } from '../models/incidents.js'
+
+export const IncidentsRepository = {
+    findAll: async (
+        status, ruleId, priority, profile, roles, roleId, limit, offset
+    ) => {
+        const selectQuery = 
+        `
+        SELECT 
+            i.*,     
+            COALESCE(
+                jsonb_agg(
+                    jsonb_build_object(
+                        'id', ro.id,
+                        'name', ro.name,
+                        'color', ro.color
+                    )
+                ) FILTER (WHERE ro.id IS NOT NULL),
+                '[]'::jsonb
+            ) AS roles
+        FROM incidents i
+        LEFT JOIN rules r 
+            ON i.rule_id = r.id
+        LEFT JOIN rules_roles rr
+            ON r.id = rr.rule_id
+        LEFT JOIN roles ro
+            ON rr.role_id = ro.id
+        WHERE 
+            ($1::varchar IS NULL OR i.status = $1)
+            AND ($2::uuid IS NULL OR i.rule_id = $2)
+            AND ($3::varchar IS NULL OR i.priority = $3)
+            AND (
+            $4::varchar = 'admin'
+            OR (
+                $5::uuid[] IS NOT NULL
+                AND EXISTS (
+                    SELECT 1
+                    FROM rules_roles rr2
+                    WHERE rr2.rule_id = i.rule_id
+                    AND rr2.role_id = ANY($5::uuid[])
+                    AND ($6::uuid IS NULL OR rr2.role_id = $6)
+                )
+            )
+        )
+        GROUP BY i.id
+        ORDER BY i.created_at DESC
+        LIMIT $7 OFFSET $8;
+        `
+
+        const values = [
+            status || null,
+            ruleId || null,
+            priority || null,
+            profile,
+            roles?.length ? roles : null,
+            roleId || null,
+            limit,
+            offset,
+        ];
+
+        const result = await pool.query(selectQuery, values);
+
+        return Incidents.fromArray(result.rows);
+    },
+
+    findById: async(id) => {
+        const selectIdQuery =
+        `
+        SELECT 
+            i.*,     
+            COALESCE(
+                jsonb_agg(
+                    jsonb_build_object(
+                        'id', ro.id,
+                        'name', ro.name,
+                        'color', ro.color
+                    )
+                ) FILTER (WHERE ro.id IS NOT NULL),
+                '[]'::jsonb
+            ) AS roles
+        FROM incidents i
+        LEFT JOIN rules r 
+            ON i.rule_id = r.id
+        LEFT JOIN rules_roles rr
+            ON r.id = rr.rule_id
+        LEFT JOIN roles ro
+            ON rr.role_id = ro.id
+        WHERE i.id = $1
+        GROUP BY i.id
+        
+        `;
+
+        const result = await pool.query(selectIdQuery, [id]);
+
+        if(!result.rows[0]){
+            return null;
+        }
+
+        return new Incidents(result.rows[0]);
+    },
+
+    create: async(incident) => {
+        const insertIncidentQuery =
+        `
+        INSERT INTO incidents
+        (assigned_user_id, rule_id, status, priority)
+        VALUES ($1, $2, $3, $4)
+        RETURNING *;
+        `
+
+        const values = [
+            incident.assignedUserId,
+            incident.ruleId,
+            incident.status,
+            incident.priority
+        ]
+
+        const result = await pool.query(insertIncidentQuery, values);
+
+        return new Incidents(result.rows[0]);
+
+    },
+
+    update: async(incident, client) => {
+        const updateIncidentQuery =
+        `
+        UPDATE incidents
+        SET assigned_user_id = $1,
+            rule_id = $2,
+            status = $3,
+            priority = $4,
+            ack_at = $5,
+            closed_at = $6,
+            updated_at = $7
+        WHERE id = $8
+        RETURNING *;
+        `;
+        const values = [
+            incident.assignedUserId,
+            incident.ruleId,
+            incident.status,
+            incident.priority,
+            incident.ackAt,
+            incident.closedAt,
+            incident.updatedAt,
+            incident.id
+        ];
+        const result = await client.query(updateIncidentQuery, values);
+
+        return new Incidents(result.rows[0]);
+    }
+};
+
+export const IncidentsLogsRepository = {
+    findByIncidentId: async (incidentId) => {
+        const selectByIncidentIdQuery =
+        `
+        SELECT * FROM incidents_events
+        WHERE incident_id = $1
+        ORDER BY created_at DESC;
+        `;
+
+        const result = await pool.query(selectByIncidentIdQuery, [incidentId]);
+
+        return IncidentsLogs.fromArray(result.rows);
+    },
+
+    create: async(incidentsLogs, client) => {
+        const insertIncidentsLogsQuery =
+        `
+        INSERT INTO incidents_events
+        (incident_id, previous_status, current_status, comment, action_user_id)
+        VALUES ($1, $2, $3, $4, $5)
+        RETURNING *;
+        `
+        const values = [
+            incidentsLogs.incidentId,
+            incidentsLogs.previousStatus,
+            incidentsLogs.currentStatus,
+            incidentsLogs.comment,
+            incidentsLogs.actionUserId
+        ]
+        const result = await client.query(insertIncidentsLogsQuery, values);
+
+        return new IncidentsLogs(result.rows[0]);
+    }
+
+};
