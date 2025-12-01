@@ -15,6 +15,7 @@ import auditLogsRouter from './audit-logs.js';
 import appSettingsRouter from './app-settings.js';
 import dbTestRouter from './db-test.js';
 import loginRouter from './login.js';
+import metricsRouter from './metrics.js';
 
 const router = express.Router();
 
@@ -33,5 +34,6 @@ router.use('/audit-logs', auditLogsRouter);
 router.use('/app-settings', appSettingsRouter);
 router.use('/db-test', dbTestRouter);
 router.use('/login', loginRouter);
+router.use('/metrics', metricsRouter);
 
 export default router;

@@ -52,3 +52,15 @@ POSTGRES_PASSWORD=
 POSTGRES_DB=
 POSTGRES_PORT=
 
+## Endpoints:
+Para acesar faça login via API
+`http://localhost:PORT/api/v1/login`
+Use o USUÁRIO 'admin@example.com' e SENHA definidos nas variáveis de ambiente (DEFAULT_PASSWORD) para autenticação. Após o login, você deve utilizar o token retornado para autenticação nos endpoints abaixo:
+- DB-Test : `http://localhost:PORT/api/v1/db-test`
+- Regras: `http://localhost:PORT/api/v1/rules`
+- Runners: `http://localhost:PORT/api/v1/runners`
+- Runner Queue: `http://localhost:PORT/api/v1/runners/queue`
+- Runner Logs: `http://localhost:PORT/api/v1/runners/logs`
+- Métricas Básicas: `http://localhost:PORT/api/v1/metrics/basic`
+
+

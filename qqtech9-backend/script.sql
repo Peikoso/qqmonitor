@@ -310,6 +310,7 @@ WITH base AS (
         i.ack_at,
         i.closed_at
     FROM incidents i
+    WHERE i.created_at >= NOW() - INTERVAL '30 days'
 )
 SELECT
     -- Contagens por status

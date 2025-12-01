@@ -203,18 +203,18 @@ WHERE NOT EXISTS (SELECT 1 FROM runner_logs WHERE runner_id = ru.id AND executed
 -- Tabela incidents
 -- Critério de unicidade: rule_id + ack_at (ou closed_at se ack for null) - uma heurística para evitar duplos
 -- ======================================
-INSERT INTO incidents (assigned_user_id, rule_id, status, priority, ack_at, closed_at)
+INSERT INTO incidents (assigned_user_id, rule_id, status, priority, created_at, ack_at, closed_at)
 SELECT 
     (SELECT id FROM users WHERE email = d.user_email LIMIT 1),
-    r.id, d.status, d.priority, d.ack_at::timestamp, d.closed_at::timestamp
+    r.id, d.status, d.priority, d.created_at::timestamp, d.ack_at::timestamp, d.closed_at::timestamp
 FROM (VALUES
-    ('admin@admin.com', 'Verificar Usuarios', 'CLOSED', 'HIGH', '2025-11-27 10:35:00', '2025-11-27 11:20:00'),
-    ('penkas@example.com', 'Verificar Incidentes', 'ACK', 'CRITICAL', '2025-11-27 11:50:00', NULL),
-    ('penkas@example.com', 'Verificar Notificações', 'OPEN', 'MEDIUM', NULL, NULL),
-    ('rogerio@example.com', 'Verificar Usuarios', 'CLOSED', 'HIGH', '2025-11-26 14:10:00', '2025-11-26 15:30:00'),
-    ('penkas@example.com', 'Verificar Incidentes', 'ACK', 'CRITICAL', '2025-11-27 08:15:00', NULL),
-    ('maria.santos@qqtech.com', 'Verificar Logs de Erro', 'CLOSED', 'HIGH', '2025-11-27 07:30:00', '2025-11-27 08:00:00')
-) AS d(user_email, rule_name, status, priority, ack_at, closed_at)
+    ('admin@admin.com', 'Verificar Usuarios', 'CLOSED', 'HIGH', '2025-11-27 10:30:00', '2025-11-27 10:35:00', '2025-11-27 11:20:00'),
+    ('penkas@example.com', 'Verificar Incidentes', 'ACK', 'HIGH', '2025-11-27 11:45:00', '2025-11-27 11:50:00', NULL),
+    ('penkas@example.com', 'Verificar Notificações', 'OPEN', 'MEDIUM', '2025-11-27 09:15:00', NULL, NULL),
+    ('rogerio@example.com', 'Verificar Usuarios', 'CLOSED', 'HIGH', '2025-11-26 14:05:00', '2025-11-26 14:10:00', '2025-11-26 15:30:00'),
+    ('penkas@example.com', 'Verificar Incidentes', 'ACK', 'HIGH', '2025-11-27 08:10:00', '2025-11-27 08:15:00', NULL),
+    ('maria.santos@qqtech.com', 'Verificar Logs de Erro', 'CLOSED', 'HIGH', '2025-11-27 07:25:00', '2025-11-27 07:30:00', '2025-11-27 08:00:00')
+) AS d(user_email, rule_name, status, priority, created_at, ack_at, closed_at)
 JOIN rules r ON r.name = d.rule_name
 WHERE NOT EXISTS (
     SELECT 1 FROM incidents 
