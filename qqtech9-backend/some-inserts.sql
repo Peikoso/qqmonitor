@@ -125,15 +125,15 @@ WHERE NOT EXISTS (SELECT 1 FROM rules WHERE name = d.name);
 -- Critério de unicidade: rule_id + role_id
 -- ======================================
 INSERT INTO rules_roles (rule_id, role_id)
-SELECT r.id, ro.id FROM rules r, roles ro WHERE r.name = 'Verificar CPU Alta' AND ro.name = 'Administrador'
+SELECT r.id, ro.id FROM rules r, roles ro WHERE r.name = 'Verificar Usuarios' AND ro.name = 'Administrador'
 AND NOT EXISTS (SELECT 1 FROM rules_roles WHERE rule_id = r.id AND role_id = ro.id);
 
 INSERT INTO rules_roles (rule_id, role_id)
-SELECT r.id, ro.id FROM rules r, roles ro WHERE r.name = 'Verificar Memória' AND ro.name = 'Supervisor'
+SELECT r.id, ro.id FROM rules r, roles ro WHERE r.name = 'Verificar Incidentes' AND ro.name = 'Supervisor'
 AND NOT EXISTS (SELECT 1 FROM rules_roles WHERE rule_id = r.id AND role_id = ro.id);
 
 INSERT INTO rules_roles (rule_id, role_id)
-SELECT r.id, ro.id FROM rules r, roles ro WHERE r.name = 'Verificar Disco Cheio' AND ro.name = 'Operador'
+SELECT r.id, ro.id FROM rules r, roles ro WHERE r.name = 'Verificar Notificações' AND ro.name = 'Operador'
 AND NOT EXISTS (SELECT 1 FROM rules_roles WHERE rule_id = r.id AND role_id = ro.id);
 
 INSERT INTO rules_roles (rule_id, role_id)
@@ -152,10 +152,10 @@ INSERT INTO runners (rule_id, status, last_run_at)
 SELECT r.id, d.status, d.last_run_at::timestamp
 FROM (VALUES 
     ('Verificar Usuarios', 'IDLE', '2025-11-27 10:30:00'),
-    ('Verificar Incidentes', 'RUNNING', '2025-11-27 11:45:00'),
-    ('Verificar Notificações', 'COMPLETED', '2025-11-27 09:15:00'),
-    ('Verificar Conexões BD', 'SCHEDULED', '2025-11-27 08:00:00'),
-    ('Verificar Logs de Erro', 'FAILED', '2025-11-27 07:20:00')
+    ('Verificar Incidentes', 'IDLE', '2025-11-27 11:45:00'),
+    ('Verificar Notificações', 'IDLE', '2025-11-27 09:15:00'),
+    ('Verificar Conexões BD', 'IDLE', '2025-11-27 08:00:00'),
+    ('Verificar Logs de Erro', 'IDLE', '2025-11-27 07:20:00')
 ) AS d(rule_name, status, last_run_at)
 JOIN rules r ON r.name = d.rule_name
 WHERE NOT EXISTS (SELECT 1 FROM runners WHERE rule_id = r.id);
@@ -189,9 +189,9 @@ SELECT
     (SELECT id FROM runner_queue WHERE runner_id = ru.id AND scheduled_for = d.scheduled_for_ref::timestamp LIMIT 1),
     d.run_time_ms, d.execution_status, d.rows_affected, d.result, d.error, d.executed_at::timestamp
 FROM (VALUES
-    ('Verificar Usuarios', '2025-11-27 10:30:00', 1250, 'SUCCESS', 3, '3 registros encontrados com CPU alta', NULL, '2025-11-27 10:30:15'),
-    ('Verificar Incidentes', '2025-11-27 11:45:00', 2100, 'SUCCESS', 1, '1 registro encontrado com memória alta', NULL, '2025-11-27 11:45:10'),
-    ('Verificar Notificações', '2025-11-27 09:15:00', 890, 'SUCCESS', 0, 'Nenhum disco com espaço crítico', NULL, '2025-11-27 09:15:12'),
+    ('Verificar Usuarios', '2025-11-27 10:30:00', 1250, 'SUCCESS', 3, '3 registros de usuários', NULL, '2025-11-27 10:30:15'),
+    ('Verificar Incidentes', '2025-11-27 11:45:00', 2100, 'SUCCESS', 1, '1 registro de incidente crítico', NULL, '2025-11-27 11:45:10'),
+    ('Verificar Notificações', '2025-11-27 09:15:00', 890, 'SUCCESS', 0, 'Nenhuma notificação crítica', NULL, '2025-11-27 09:15:12'),
     ('Verificar Conexões BD', NULL, 2450, 'SUCCESS', 45, '45 conexões ativas no banco', NULL, '2025-11-27 08:00:00'),
     ('Verificar Logs de Erro', '2025-11-27 07:20:00', 5100, 'TIMEOUT', NULL, NULL, 'Query execution timeout after 5000ms', '2025-11-27 07:20:08')
 ) AS d(rule_name, scheduled_for_ref, run_time_ms, execution_status, rows_affected, result, error, executed_at)
@@ -232,10 +232,10 @@ SELECT
     inc.id, d.previous_status, d.current_status, d.comment, (SELECT id FROM users WHERE email = 'admin@admin.com' LIMIT 1)
 FROM (VALUES
     ('Verificar Usuarios', 'OPEN', 'ACK', 'Incidente reconhecido pelo operador'),
-    ('Verificar Usuarios', 'ACK', 'CLOSED', 'Problema resolvido - CPU normalizada'),
-    ('Verificar Incidentes', 'OPEN', 'ACK', 'Verificando uso de memória'),
+    ('Verificar Usuarios', 'ACK', 'CLOSED', 'Problema resolvido'),
+    ('Verificar Incidentes', 'OPEN', 'ACK', 'Verificando...'),
     ('Verificar Logs de Erro', 'OPEN', 'ACK', 'Analisando causa raiz'),
-    ('Verificar Logs de Erro', 'ACK', 'CLOSED', 'Memória cache limpa - resolvido')
+    ('Verificar Logs de Erro', 'ACK', 'CLOSED', 'Resolvido')
 ) AS d(rule_name, previous_status, current_status, comment)
 JOIN rules r ON r.name = d.rule_name
 -- Busca o incidente mais recente dessa regra para vincular o evento
@@ -269,11 +269,11 @@ SELECT
     (SELECT id FROM channels WHERE type=d.channel_type LIMIT 1),
     u.id, d.title, d.message, d.sent_at::timestamp, d.status, d.read_at::timestamp
 FROM (VALUES
-    ('Verificar Usuarios', 'EMAIL', 'admin@admin.com', 'CPU Alta Detectada', 'O uso de CPU ultrapassou 80% nos últimos 5 minutos', '2025-11-27 10:30:20', 'READED', '2025-11-27 10:32:00'),
-    ('Verificar Incidentes', 'COMUNIQ', 'penkas@example.com', 'CRÍTICO: Memória Alta', 'Uso de memória crítico detectado - 92%', '2025-11-27 11:45:15', 'READED', '2025-11-27 11:46:00'),
-    ('Verificar Notificações', 'PUSH', 'penkas@example.com', 'Disco com Pouco Espaço', 'Servidor XYZ com menos de 10% de espaço livre', '2025-11-27 12:00:00', 'SENT', NULL),
-    ('Verificar Usuarios', 'PUSH SOUND', 'rogerio@example.com', 'Incidente Resolvido', 'CPU normalizada - incidente fechado', '2025-11-26 15:35:00', 'READED', '2025-11-26 15:40:00'),
-    ('Verificar Incidentes', 'EMAIL', 'penkas@example.com', 'Memória Crítica', 'Memória do servidor principal em nível crítico', '2025-11-27 08:16:00', 'SENT', NULL)
+    ('Verificar Usuarios', 'EMAIL', 'admin@admin.com', 'Error ao verificar usuarios', 'Timeout da query de 5 minutos', '2025-11-27 10:30:20', 'READED', '2025-11-27 10:32:00'),
+    ('Verificar Incidentes', 'COMUNIQ', 'penkas@example.com', 'CRÍTICO: Incidentes fora de controle', 'Incidentes críticos detectados', '2025-11-27 11:45:15', 'READED', '2025-11-27 11:46:00'),
+    ('Verificar Notificações', 'PUSH', 'penkas@example.com', 'Error ao enviar Notificações', 'Verificar error', '2025-11-27 12:00:00', 'SENT', NULL),
+    ('Verificar Usuarios', 'PUSH SOUND', 'rogerio@example.com', 'Usuarios Execidos', 'Verificar por que tantos usuarios', '2025-11-26 15:35:00', 'READED', '2025-11-26 15:40:00'),
+    ('Verificar Incidentes', 'EMAIL', 'penkas@example.com', 'Incidente Crítico', 'Incidente crítico detectado', '2025-11-27 08:16:00', 'SENT', NULL)
 ) AS d(rule_name, channel_type, user_email, title, message, sent_at, status, read_at)
 JOIN users u ON u.email = d.user_email
 JOIN rules r ON r.name = d.rule_name
