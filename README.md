@@ -38,6 +38,10 @@ docker-compose up -d --build
 ```
 
 ## Configuração de Variáveis de Ambiente
+Coloque o arquivo JSON do Firebase na pasta da api qqtech9-backend e defina o caminho no arquivo `.env` na variável `SERVICE_PATH`. Como exemplo:
+```
+SERVICE_PATH=./plantao-monitor-firebase-adminsdk.json
+```
 
 ## API
 DATABASE_URL=
