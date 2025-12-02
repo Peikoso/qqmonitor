@@ -7,6 +7,9 @@ from repositories.runners import RunnersRepository, RunnerQueueRepository, Runne
 from repositories.rules import RulesRepository
 from sqlalchemy import text
 from config.database import get_session
+from config.index import API_INCIDENTS_URL
+import requests
+
 
 class RunnerWorker:
     def __init__(self):
@@ -91,6 +94,24 @@ class RunnerWorker:
             await RunnerQueueRepository.update(job.complete())
 
             print(f'[Runner Worker] Job {queue_id} concluído com sucesso. Linhas afetadas: {execution_result["rows_affected"]}')
+            
+            if(execution_result['rows_affected'] > 0):
+                print(f'[Runner Worker] Incidentes detectados na regra {rule_id}.')
+                await RulesRepository.update_disabled_status(rule_id, False)
+                
+                payload = {
+                    'ruleId': str(rule_id),
+                    'priority': rule.priority
+                }
+                
+                print(API_INCIDENTS_URL)
+                
+                try:
+                    response = requests.post(API_INCIDENTS_URL, json=payload)
+                    
+                    print(f'[Runner Worker] Notificação enviada para API de incidentes. Status code: {response.status_code}') 
+                except Exception as api_error:
+                    print(f'[Runner Worker] Erro ao notificar API de incidentes: {str(api_error)}')   
 
             self.log_metrics({
                 'queueId': queue_id,

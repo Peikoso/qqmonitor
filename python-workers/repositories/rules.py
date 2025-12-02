@@ -22,3 +22,16 @@ class RulesRepository:
             rule_dict = dict(row._mapping)
             rule = Rules(**rule_dict)
             return rule
+
+    async def update_disabled_status(rule_id, is_active ):
+        query = text(
+        """
+        UPDATE rules
+        SET is_active = :is_active
+        WHERE id = :rule_id
+        """
+        )
+        
+        async with get_session() as session:
+            await session.execute(query, {"rule_id": rule_id, "is_active": is_active})
+            await session.commit()

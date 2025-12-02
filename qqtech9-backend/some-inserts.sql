@@ -116,7 +116,7 @@ FROM (VALUES
     ('Verificar Incidentes', 'Monitora a quantidade de incidentes abertos', 'POSTGRESQL', 'SELECT count(*) FROM incidents WHERE status = ''OPEN''', 'HIGH', 30000, 5, 5000, '00:00:00', '23:59:59', true, true, false),
     ('Verificar Notificações', 'Monitora as notificações enviadas (não lidas)', 'POSTGRESQL', 'SELECT count(*) FROM notifications WHERE status = ''SENT''', 'MEDIUM', 120000, 3, 5000, '06:00:00', '22:00:00', true, true, false),
     ('Verificar Conexões BD', 'Monitora conexões ativas no banco de dados', 'POSTGRESQL', 'SELECT count(*) FROM pg_stat_activity WHERE state = ''active''', 'LOW', 180000, 2, 3000, '00:00:00', '23:59:59', true, true, false),
-    ('Verificar Logs de Erro', 'Monitora logs de erro críticos', 'POSTGRESQL', 'SELECT * FROM runner_logs WHERE execution_status = ''ERROR'' AND created_at > NOW() - INTERVAL ''5 minutes''', 'HIGH', 90000, 4, 8000, '00:00:00', '23:59:59', true, false, false)
+    ('Verificar Logs de Erro', 'Monitora logs de erro críticos', 'POSTGRESQL', 'SELECT * FROM runner_logs WHERE execution_status = ''ERROR'' AND executed_at > NOW() - INTERVAL ''5 minutes''', 'HIGH', 90000, 4, 8000, '00:00:00', '23:59:59', true, false, false)
 ) AS d(name, description, database_type, sql, priority, execution_interval_ms, max_error_count, timeout_ms, start_time, end_time, notification_enabled, is_active, silence_mode)
 WHERE NOT EXISTS (SELECT 1 FROM rules WHERE name = d.name);
 

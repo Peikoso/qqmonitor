@@ -48,12 +48,6 @@ export const IncidentService = {
     createIncident: async (dto) => {
         const newIncident = new Incidents(dto);
 
-        await RuleService.getRuleById(newIncident.ruleId);
-
-        for(const roleId of newIncident.roles){
-            await RoleService.getRoleById(roleId);
-        }
-
         const savedIncident = await IncidentsRepository.create(newIncident);
 
         return savedIncident;
