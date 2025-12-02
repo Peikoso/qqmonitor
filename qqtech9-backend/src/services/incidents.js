@@ -9,15 +9,20 @@ import { pool } from "../config/database-conn.js";
 
 
 export const IncidentService = {
-    getAllIncidents: async (status, rule_id, priority, page, perPage) => {
+    getAllIncidents: async (currentUserFirebaseUid, status, ruleId, priority, roleId, page, perPage) => {
+        const user = await UserService.getSelf(currentUserFirebaseUid);
+        
         const pageNumber = parseInt(page) > 0 ? parseInt(page) : 1;
         const limit = parseInt(perPage) > 0 ? parseInt(perPage) : 10;
         const offset = (pageNumber - 1) * limit;
 
         const incidents = await IncidentsRepository.findAll(
             status, 
-            rule_id, 
-            priority, 
+            ruleId, 
+            priority,
+            user.profile,
+            user.roles.map(role => role.id),
+            roleId, 
             limit,
             offset
         );

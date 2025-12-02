@@ -4,12 +4,15 @@ import { ResponseIncidentsDto, ResponseIncidentsLogsDto } from '../dto/incidents
 
 export const IncidentsController = {
     getAllIncidents: async(req, res) => {
-        const { status, rule_id, priority, page, perPage } = req.query;
+        const currentUserFirebaseUid = req.user.uid;
+        const { status, ruleId, priority, roleId, page, perPage } = req.query;
 
         const incidents = await IncidentService.getAllIncidents(
+            currentUserFirebaseUid,
             status, 
-            rule_id, 
+            ruleId, 
             priority, 
+            roleId,
             page, 
             perPage
         );
