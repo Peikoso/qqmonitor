@@ -59,11 +59,13 @@ export const IncidentsLogsController = {
     },
     
     createIncidentsAction: async(req, res) => {
+        const currentUserFirebaseUid = req.user.uid;
+        const incidentId = req.params.id;
         const incidentLogData = req.body;
 
         const dto = new CreateIncidentsLogsDto(incidentLogData).validate();
 
-        const newIncidentLog = await IncidentLogService.createIncidentsAction(dto);
+        const newIncidentLog = await IncidentLogService.createIncidentsAction(incidentId, dto, currentUserFirebaseUid);
 
         const response = new ResponseIncidentsLogsDto(newIncidentLog);
 

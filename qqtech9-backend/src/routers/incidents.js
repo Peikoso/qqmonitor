@@ -8,6 +8,6 @@ router.get('/:id', IncidentsController.getIncidentById);
 router.post('/', IncidentsController.createIncident)
 
 router.get('/logs/:id', IncidentsLogsController.getIncidentLogsByIncidentId);
-router.post('/logs', IncidentsLogsController.createIncidentsAction);
+router.post('/logs/:id', IncidentsLogsController.createIncidentsAction);
 
 export default router;

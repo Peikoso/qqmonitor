@@ -104,13 +104,12 @@ export const IncidentsRepository = {
         const insertIncidentQuery =
         `
         INSERT INTO incidents
-        (assigned_user_id, rule_id, status, priority)
-        VALUES ($1, $2, $3, $4)
+        (rule_id, status, priority)
+        VALUES ($1, $2, $3)
         RETURNING *;
         `
 
         const values = [
-            incident.assignedUserId,
             incident.ruleId,
             incident.status,
             incident.priority

@@ -48,7 +48,6 @@ export const IncidentService = {
     createIncident: async (dto) => {
         const newIncident = new Incidents(dto);
 
-        await UserService.getUserById(newIncident.assignedUserId);
         await RuleService.getRuleById(newIncident.ruleId);
 
         for(const roleId of newIncident.roles){
@@ -73,7 +72,7 @@ export const IncidentLogService = {
         return incidentLogs;
     },
 
-    createIncidentsAction: async (dto) => {
+    createIncidentsAction: async (incidentId, dto, currentUserFirebaseUid) => {
         const client = await pool.connect();
 
         try {
@@ -81,10 +80,13 @@ export const IncidentLogService = {
 
             const newIncidentsLogs = new IncidentsLogs(dto);
 
-            await UserService.getUserById(newIncidentsLogs.actionUserId);
-            const incident = await IncidentService.getIncidentById(newIncidentsLogs.incidentId);
-
+            const user = await UserService.getSelf(currentUserFirebaseUid);
+            const incident = await IncidentService.getIncidentById(incidentId);
+            
+            newIncidentsLogs.incidentId = incident.id;
+            newIncidentsLogs.actionUserId = user.id;
             newIncidentsLogs.nextStatus(incident.status);
+            
             const savedIncidentsLogs = await IncidentsLogsRepository.create(newIncidentsLogs, client);
 
             incident.updateStatus(savedIncidentsLogs);
