@@ -11,6 +11,12 @@ export const ScheduleService = {
         return await SchedulesRepository.findUpcomingSchedules(date);
     },
 
+    getCurrentScheduleByRoleId: async (roleId) => {
+        const date = new Date().toISOString().split('T')[0];
+
+        return await SchedulesRepository.findCurrentScheduleByRoleId(roleId, date);
+    },
+
     getScheduleById: async (id) => {
         if(!isValidUuid(id)) {
             throw new ValidationError(`Invalid UUID.`);

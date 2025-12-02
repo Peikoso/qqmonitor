@@ -49,6 +49,14 @@ export const NotificationService = {
         return savedNotification;
     },
 
+    createNotificationForIncidents: async (notificationData) => {
+        const newNotification = new Notifications(notificationData);
+
+        const savedNotification = await NotificationsRepository.create(newNotification);
+
+        return savedNotification;
+    },
+
     updateNotification: async (id, dto) => {
         const existingNotification = await NotificationService.getNotificationById(id);
 

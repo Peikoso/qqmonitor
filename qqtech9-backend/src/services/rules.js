@@ -37,8 +37,6 @@ export const RuleService = {
             throw new ValidationError('Invalid Rule UUID.')
         }
 
-        await AuthService.requireAdmin(currentUserFirebaseUid);
-
         const rule = await RulesRepository.findById(id)
 
         if(!rule){

@@ -23,18 +23,6 @@ export const RulesController = {
 
     },
 
-    getRuleById: async (req, res) =>{
-        const currentUserFirebaseUid = req.user.uid;
-        const id = req.params.id;
-
-        const rule = await RuleService.getRuleById(id, currentUserFirebaseUid);
-
-        const response = new ResponseRulesDto(rule);
-
-        return res.status(200).json(response);
-
-    },
-
     createRule: async (req, res) => {
         const currentUserFirebaseUid = req.user.uid;
         const ruleData = req.body;

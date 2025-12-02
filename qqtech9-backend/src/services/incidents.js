@@ -2,9 +2,9 @@ import { IncidentsRepository, IncidentsLogsRepository } from "../repositories/in
 import { Incidents, IncidentsLogs } from '../models/incidents.js';
 import { isValidUuid } from "../utils/validations.js";
 import { ValidationError, NotFoundError } from "../utils/errors.js";
-import { RoleService } from "./roles.js";
-import { RuleService } from "./rules.js";
 import { UserService } from "./users.js";
+import { NotificationService } from "./notifications.js";
+import { RuleService } from "./rules.js";
 import { pool } from "../config/database-conn.js";
 
 
@@ -49,6 +49,16 @@ export const IncidentService = {
         const newIncident = new Incidents(dto);
 
         const savedIncident = await IncidentsRepository.create(newIncident);
+
+        const rule = await RuleService.getRuleById(savedIncident.ruleId);
+
+        await NotificationService.createNotificationForIncidents({
+            incidentId: savedIncident.id,
+            title: 'Novo Incidente Reportado',
+            message: `
+            Novo Incidente reportado para Regra: ${rule.name}, Prioridade: ${savedIncident.priority}.
+            `,
+        });
 
         return savedIncident;
     }, 
