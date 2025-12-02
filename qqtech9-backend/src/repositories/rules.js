@@ -65,17 +65,7 @@ export const RulesRepository = {
         const selectIdQuery = 
         `
         SELECT 
-            r.*, 
-            COALESCE(
-                jsonb_agg(
-                    jsonb_build_object(
-                        'id', ro.id,
-                        'name', ro.name,
-                        'color', ro.color
-                    )
-                ) FILTER (WHERE rr.role_id IS NOT NULL),
-                '[]'::jsonb
-            ) AS roles 
+            r.*, array_remove(array_agg(ro.id), NULL) AS roles 
         FROM rules r 
         LEFT JOIN rules_roles rr 
             ON r.id = rr.rule_id

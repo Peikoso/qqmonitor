@@ -68,17 +68,7 @@ export const IncidentsRepository = {
         const selectIdQuery =
         `
         SELECT 
-            i.*,     
-            COALESCE(
-                jsonb_agg(
-                    jsonb_build_object(
-                        'id', ro.id,
-                        'name', ro.name,
-                        'color', ro.color
-                    )
-                ) FILTER (WHERE ro.id IS NOT NULL),
-                '[]'::jsonb
-            ) AS roles
+            i.*, array_remove(array_agg(ro.id), NULL) AS roles
         FROM incidents i
         LEFT JOIN rules r 
             ON i.rule_id = r.id

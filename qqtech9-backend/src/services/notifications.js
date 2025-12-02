@@ -1,9 +1,9 @@
 import { Notifications } from "../models/notifications.js";
 import { NotificationsRepository } from "../repositories/notifications.js";
-import { ForbiddenError, NotFoundError, ValidationError  } from "../utils/errors.js";
+import { NotFoundError, ValidationError  } from "../utils/errors.js";
 import { isValidUuid } from "../utils/validations.js";
 import { UserService } from "./users.js";
-import { ChannelService } from "./channels.js";
+import { ScheduleService } from "./schedules.js";
 import { IncidentService } from "./incidents.js";
 
 
@@ -40,10 +40,6 @@ export const NotificationService = {
     createNotification: async (dto) => {
         const newNotification = new Notifications(dto);
 
-        await UserService.getUserById(newNotification.userId);
-        await ChannelService.getChannelById(newNotification.channelId);
-        await IncidentService.getIncidentById(newNotification.incidentId);
-
         const savedNotification = await NotificationsRepository.create(newNotification);
 
         return savedNotification;
@@ -51,6 +47,9 @@ export const NotificationService = {
 
     createNotificationForIncidents: async (notificationData) => {
         const newNotification = new Notifications(notificationData);
+
+        const incident = await IncidentService.getIncidentById(newNotification.incidentId);
+        const scheduledUser = await ScheduleService.getCurrentScheduleByRolesId(incident.roles);
 
         const savedNotification = await NotificationsRepository.create(newNotification);
 

@@ -15,6 +15,34 @@ export const SchedulesRepository = {
         return Schedules.fromArray(result.rows);
     },
 
+    findCurrentScheduleByRoleId: async (rolesId, date) => {
+        const selectQuery = 
+        `
+        SELECT s.* FROM schedules s
+        JOIN users u 
+            ON s.user_id = u.id
+        WHERE 
+            $1::uuid[] IS NOT NULL
+            AND EXISTS (
+                SELECT 1
+                FROM user_roles ur
+                WHERE ur.user_id = u.id
+                AND ur.role_id = ANY($1::uuid[])
+            )
+            AND $2 BETWEEN DATE(s.start_time) AND DATE(s.end_time)
+        ORDER BY s.start_time ASC
+        LIMIT 1;
+        `;
+
+        const result = await pool.query(selectQuery, [rolesId, date]);
+
+        if(!result.rows[0]){
+            return null;
+        }
+
+        return new Schedules(result.rows[0]);
+    },
+
     findById: async (id) => {
         const selectIdQuery = 
         `

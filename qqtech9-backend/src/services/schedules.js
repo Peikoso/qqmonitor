@@ -11,10 +11,16 @@ export const ScheduleService = {
         return await SchedulesRepository.findUpcomingSchedules(date);
     },
 
-    getCurrentScheduleByRoleId: async (roleId) => {
+    getCurrentScheduleByRolesId: async (roles) => {
         const date = new Date().toISOString().split('T')[0];
 
-        return await SchedulesRepository.findCurrentScheduleByRoleId(roleId, date);
+        const schedule = await SchedulesRepository.findCurrentScheduleByRolesId(rolesId, date);
+
+        if(!schedule) {
+            throw new NotFoundError(`No current schedule found for the given role ID.`);
+        }
+
+        return schedule;
     },
 
     getScheduleById: async (id) => {
