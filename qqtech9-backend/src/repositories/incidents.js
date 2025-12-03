@@ -18,7 +18,15 @@ export const IncidentsRepository = {
                     )
                 ) FILTER (WHERE ro.id IS NOT NULL),
                 '[]'::jsonb
-            ) AS roles
+            ) AS roles,
+            CASE 
+                WHEN r.id IS NOT NULL THEN
+                    jsonb_build_object(
+                        'id', r.id,
+                        'name', r.name
+                    )
+                ELSE NULL
+            END AS rule
         FROM incidents i
         LEFT JOIN rules r 
             ON i.rule_id = r.id
@@ -28,7 +36,7 @@ export const IncidentsRepository = {
             ON rr.role_id = ro.id
         WHERE 
             ($1::varchar IS NULL OR i.status = $1)
-            AND ($2::uuid IS NULL OR i.rule_id = $2)
+            AND ($2::varchar IS NULL OR r.name ILIKE '%' || $2 || '%')
             AND ($3::varchar IS NULL OR i.priority = $3)
             AND (
                 $4::varchar = 'admin'
@@ -36,17 +44,25 @@ export const IncidentsRepository = {
                     $5::uuid[] IS NOT NULL
                     AND EXISTS (
                         SELECT 1
-                        FROM rules_roles rr2
-                        WHERE rr2.rule_id = i.rule_id
-                        AND rr2.role_id = ANY($5::uuid[])
-                        AND ($6::uuid IS NULL OR rr2.role_id = $6)
+                        FROM rules_roles rr_auth
+                        WHERE rr_auth.rule_id = i.rule_id
+                        AND rr_auth.role_id = ANY($5::uuid[])
                     )
                 )
             )
-        GROUP BY i.id
+            AND (
+                $6::uuid IS NULL 
+                OR EXISTS (
+                    SELECT 1 
+                    FROM rules_roles rr_filter 
+                    WHERE rr_filter.rule_id = i.rule_id 
+                    AND rr_filter.role_id = $6
+                )
+            )
+        GROUP BY i.id, r.id
         ORDER BY i.created_at DESC
         LIMIT $7 OFFSET $8;
-        `
+        `;
 
         const values = [
             status || null,

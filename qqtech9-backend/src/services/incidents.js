@@ -9,7 +9,7 @@ import { pool } from "../config/database-conn.js";
 
 
 export const IncidentService = {
-    getAllIncidents: async (currentUserFirebaseUid, status, ruleId, priority, roleId, page, perPage) => {
+    getAllIncidents: async (currentUserFirebaseUid, status, ruleName, priority, roleId, page, perPage) => {
         const user = await UserService.getSelf(currentUserFirebaseUid);
         
         const pageNumber = parseInt(page) > 0 ? parseInt(page) : 1;
@@ -18,7 +18,7 @@ export const IncidentService = {
 
         const incidents = await IncidentsRepository.findAll(
             status, 
-            ruleId, 
+            ruleName, 
             priority,
             user.profile,
             user.roles.map(role => role.id),
@@ -76,7 +76,7 @@ export const IncidentLogService = {
 
     createIncidentsAction: async (incidentId, dto, currentUserFirebaseUid) => {
         const client = await pool.connect();
-
+        
         try {
             await client.query('BEGIN');
 

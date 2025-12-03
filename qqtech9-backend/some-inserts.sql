@@ -20,7 +20,7 @@ WHERE NOT EXISTS (SELECT 1 FROM roles WHERE name = d.name);
 INSERT INTO users (firebase_id, name, matricula, email, phone, picture, profile, pending)
 SELECT d.firebase_id, d.name, d.matricula, d.email, d.phone, NULL, d.profile, d.pending::boolean
 FROM (VALUES
-    (NULL, 'João Martins', 'MAT001', 'admin@admin.com', '11999998888', 'admin', true),
+    (NULL, 'João Martins', 'MAT001', 'joao@example.com', '11999998888', 'admin', true),
     (NULL, 'Maria Santos', 'MAT002', 'maria@example.com', '11988887777', 'operator', true),
     (NULL, 'Penkas Peikson', 'MAT003', 'penkas@example.com', '11977776666', 'viewer', true),
     (NULL, 'Ana Oliveira', 'MAT004', 'ana@example.com', '11966665555', 'viewer', true),
@@ -35,7 +35,7 @@ WHERE NOT EXISTS (SELECT 1 FROM users WHERE email = d.email);
 INSERT INTO users_roles (user_id, role_id)
 SELECT u.id, r.id 
 FROM users u, roles r 
-WHERE u.email='admin@admin.com' AND r.name='Administrador'
+WHERE u.email='joao@example.com' AND r.name='Administrador'
 AND NOT EXISTS (SELECT 1 FROM users_roles WHERE user_id = u.id AND role_id = r.id);
 
 INSERT INTO users_roles (user_id, role_id)
@@ -55,7 +55,7 @@ AND NOT EXISTS (SELECT 1 FROM users_roles WHERE user_id = u.id AND role_id = r.i
 -- Critério de unicidade: user_id
 -- ======================================
 INSERT INTO user_preferences (user_id, dnd_start_time, dnd_end_time)
-SELECT id, '22:00:00', '07:00:00' FROM users WHERE email = 'admin@admin.com'
+SELECT id, '22:00:00', '07:00:00' FROM users WHERE email = 'joao@example.com'
 AND NOT EXISTS (SELECT 1 FROM user_preferences WHERE user_id = users.id);
 
 INSERT INTO user_preferences (user_id, dnd_start_time, dnd_end_time) 
@@ -87,7 +87,7 @@ WHERE NOT EXISTS (SELECT 1 FROM channels WHERE type = d.type);
 INSERT INTO user_preferences_channels (user_preferences_id, channel_id)
 SELECT up.id, c.id 
 FROM user_preferences up, channels c
-WHERE up.user_id = (SELECT id FROM users WHERE email='admin@admin.com' LIMIT 1)
+WHERE up.user_id = (SELECT id FROM users WHERE email='joao@example.com' LIMIT 1)
 AND c.type IN ('PUSH','EMAIL')
 AND NOT EXISTS (SELECT 1 FROM user_preferences_channels WHERE user_preferences_id = up.id AND channel_id = c.id);
 
@@ -110,7 +110,7 @@ AND NOT EXISTS (SELECT 1 FROM user_preferences_channels WHERE user_preferences_i
 -- Critério de unicidade: name
 -- ======================================
 INSERT INTO rules (name, description, database_type, sql, priority, execution_interval_ms, max_error_count, timeout_ms, start_time, end_time, notification_enabled, is_active, silence_mode, user_creator_id)
-SELECT d.name, d.description, d.database_type, d.sql, d.priority, d.execution_interval_ms, d.max_error_count, d.timeout_ms, d.start_time::time, d.end_time::time, d.notification_enabled::boolean, d.is_active::boolean, d.silence_mode::boolean, (SELECT id FROM users WHERE email = 'admin@admin.com' LIMIT 1)
+SELECT d.name, d.description, d.database_type, d.sql, d.priority, d.execution_interval_ms, d.max_error_count, d.timeout_ms, d.start_time::time, d.end_time::time, d.notification_enabled::boolean, d.is_active::boolean, d.silence_mode::boolean, (SELECT id FROM users WHERE email = 'joao@example.com' LIMIT 1)
 FROM (VALUES
     ('Verificar Usuarios', 'Monitora a quantidade de usuarios', 'POSTGRESQL', 'SELECT count(*) FROM users', 'HIGH', 60000, 3, 5000, '00:00:00', '23:59:59', true, true, false),
     ('Verificar Incidentes', 'Monitora a quantidade de incidentes abertos', 'POSTGRESQL', 'SELECT count(*) FROM incidents WHERE status = ''OPEN''', 'HIGH', 30000, 5, 5000, '00:00:00', '23:59:59', true, true, false),
@@ -208,7 +208,7 @@ SELECT
     (SELECT id FROM users WHERE email = d.user_email LIMIT 1),
     r.id, d.status, d.priority, d.created_at::timestamp, d.ack_at::timestamp, d.closed_at::timestamp
 FROM (VALUES
-    ('admin@admin.com', 'Verificar Usuarios', 'CLOSED', 'HIGH', '2025-11-27 10:30:00', '2025-11-27 10:35:00', '2025-11-27 11:20:00'),
+    ('joao@example.com', 'Verificar Usuarios', 'CLOSED', 'HIGH', '2025-11-27 10:30:00', '2025-11-27 10:35:00', '2025-11-27 11:20:00'),
     ('penkas@example.com', 'Verificar Incidentes', 'ACK', 'HIGH', '2025-11-27 11:45:00', '2025-11-27 11:50:00', NULL),
     ('penkas@example.com', 'Verificar Notificações', 'OPEN', 'MEDIUM', '2025-11-27 09:15:00', NULL, NULL),
     ('rogerio@example.com', 'Verificar Usuarios', 'CLOSED', 'HIGH', '2025-11-26 14:05:00', '2025-11-26 14:10:00', '2025-11-26 15:30:00'),
@@ -229,7 +229,7 @@ WHERE NOT EXISTS (
 -- ======================================
 INSERT INTO incidents_events (incident_id, previous_status, current_status, comment, action_user_id)
 SELECT 
-    inc.id, d.previous_status, d.current_status, d.comment, (SELECT id FROM users WHERE email = 'admin@admin.com' LIMIT 1)
+    inc.id, d.previous_status, d.current_status, d.comment, (SELECT id FROM users WHERE email = 'joao@example.com' LIMIT 1)
 FROM (VALUES
     ('Verificar Usuarios', 'OPEN', 'ACK', 'Incidente reconhecido pelo operador'),
     ('Verificar Usuarios', 'ACK', 'CLOSED', 'Problema resolvido'),
@@ -250,11 +250,11 @@ AND NOT EXISTS (SELECT 1 FROM incidents_events WHERE incident_id = inc.id AND cu
 INSERT INTO schedules (user_id, start_time, end_time)
 SELECT u.id, d.start_time::timestamp, d.end_time::timestamp
 FROM (VALUES
-    ('admin@admin.com', '2025-11-27 08:00:00', '2025-11-27 16:00:00'),
+    ('joao@example.com', '2025-11-27 08:00:00', '2025-11-27 16:00:00'),
     ('rogerio@example.com', '2025-11-27 16:00:00', '2025-11-28 00:00:00'),
     ('penkas@example.com', '2025-11-28 00:00:00', '2025-11-28 08:00:00'),
     ('rogerio@example.com', '2025-11-28 08:00:00', '2025-11-28 16:00:00'),
-    ('admin@admin.com', '2025-11-28 16:00:00', '2025-11-29 00:00:00')
+    ('joao@example.com', '2025-11-28 16:00:00', '2025-11-29 00:00:00')
 ) AS d(email, start_time, end_time)
 JOIN users u ON u.email = d.email
 WHERE NOT EXISTS (SELECT 1 FROM schedules WHERE user_id = u.id AND start_time = d.start_time::timestamp);
@@ -269,7 +269,7 @@ SELECT
     (SELECT id FROM channels WHERE type=d.channel_type LIMIT 1),
     u.id, d.title, d.message, d.sent_at::timestamp, d.status, d.read_at::timestamp
 FROM (VALUES
-    ('Verificar Usuarios', 'EMAIL', 'admin@admin.com', 'Error ao verificar usuarios', 'Timeout da query de 5 minutos', '2025-11-27 10:30:20', 'READED', '2025-11-27 10:32:00'),
+    ('Verificar Usuarios', 'EMAIL', 'joao@example.com', 'Error ao verificar usuarios', 'Timeout da query de 5 minutos', '2025-11-27 10:30:20', 'READED', '2025-11-27 10:32:00'),
     ('Verificar Incidentes', 'COMUNIQ', 'penkas@example.com', 'CRÍTICO: Incidentes fora de controle', 'Incidentes críticos detectados', '2025-11-27 11:45:15', 'READED', '2025-11-27 11:46:00'),
     ('Verificar Notificações', 'PUSH', 'penkas@example.com', 'Error ao enviar Notificações', 'Verificar error', '2025-11-27 12:00:00', 'SENT', NULL),
     ('Verificar Usuarios', 'PUSH SOUND', 'rogerio@example.com', 'Usuarios Execidos', 'Verificar por que tantos usuarios', '2025-11-26 15:35:00', 'READED', '2025-11-26 15:40:00'),
@@ -289,9 +289,9 @@ AND inc.id = (SELECT id FROM incidents WHERE rule_id = r.id LIMIT 1);
 INSERT INTO audit_logs (entity_id, entity_type, action_type, old_value, new_value, user_id)
 SELECT d.entity_id, d.entity_type, d.action_type, d.old_value::jsonb, d.new_value::jsonb, u.id
 FROM (VALUES
-    ((SELECT id FROM rules WHERE name = 'Verificar Usuarios' LIMIT 1), 'rules', 'UPDATE', '{"is_active": true}', '{"is_active": false}', 'admin@admin.com'),
-    ((SELECT id FROM users WHERE email = 'maria@example.com' LIMIT 1), 'users', 'UPDATE', '{"pending": true}', '{"pending": false}', 'admin@admin.com'),
-    ((SELECT id FROM incidents WHERE rule_id = (SELECT id FROM rules WHERE name = 'Verificar Usuarios' LIMIT 1) LIMIT 1), 'incidents', 'UPDATE', '{"status": "ACK"}', '{"status": "CLOSED"}', 'admin@admin.com'),
+    ((SELECT id FROM rules WHERE name = 'Verificar Usuarios' LIMIT 1), 'rules', 'UPDATE', '{"is_active": true}', '{"is_active": false}', 'joao@example.com'),
+    ((SELECT id FROM users WHERE email = 'maria@example.com' LIMIT 1), 'users', 'UPDATE', '{"pending": true}', '{"pending": false}', 'joao@example.com'),
+    ((SELECT id FROM incidents WHERE rule_id = (SELECT id FROM rules WHERE name = 'Verificar Usuarios' LIMIT 1) LIMIT 1), 'incidents', 'UPDATE', '{"status": "ACK"}', '{"status": "CLOSED"}', 'joao@example.com'),
     ((SELECT id FROM rules WHERE name = 'Verificar Notificações' LIMIT 1), 'rules', 'CREATE', NULL, '{"name": "Verificar Notificações", "is_active": true}', 'penkas@example.com'),
     ((SELECT id FROM channels WHERE type='PUSH' LIMIT 1), 'channels', 'UPDATE', '{"is_active": true}', '{"is_active": false}', 'rogerio@example.com')
 ) AS d(entity_id, entity_type, action_type, old_value, new_value, user_email)
@@ -311,11 +311,11 @@ WHERE NOT EXISTS (
 INSERT INTO sql_test_logs (user_id, sql, result)
 SELECT u.id, d.sql, d.result
 FROM (VALUES
-    ('admin@admin.com', 'SELECT COUNT(*) FROM users', '5 rows returned'),
+    ('joao@example.com', 'SELECT COUNT(*) FROM users', '5 rows returned'),
     ('penkas@example.com', 'SELECT * FROM rules WHERE is_active = true', '4 rows returned'),
     ('rogerio@example.com', 'SELECT * FROM incidents WHERE status = ''OPEN''', '1 row returned'),
     ('maria.santos@qqtech.com', 'SELECT COUNT(*) FROM notifications WHERE status = ''SENT''', '2 rows returned'),
-    ('admin@admin.com', 'SELECT * FROM audit_logs ORDER BY created_at DESC LIMIT 10', '5 rows returned')
+    ('joao@example.com', 'SELECT * FROM audit_logs ORDER BY created_at DESC LIMIT 10', '5 rows returned')
 ) AS d(user_email, sql, result)
 JOIN users u ON u.email = d.user_email
 WHERE NOT EXISTS (SELECT 1 FROM sql_test_logs WHERE user_id = u.id AND sql = d.sql);
@@ -349,5 +349,5 @@ FROM (VALUES
     ('enable_email_notifications', '{"value": true}'),
     ('default_incident_priority', '{"value": "MEDIUM"}')
 ) AS d(key, value)
-CROSS JOIN (SELECT id FROM users WHERE email = 'admin@admin.com' LIMIT 1) u
+CROSS JOIN (SELECT id FROM users WHERE email = 'joao@example.com' LIMIT 1) u
 WHERE NOT EXISTS (SELECT 1 FROM app_settings WHERE key = d.key);

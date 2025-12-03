@@ -3,9 +3,7 @@ import { AuthService } from "./auth.js";
 import { MetricsRepository } from "../repositories/metrics.js";
 
 export const MetricService = {
-    getBasicMetrics: async (currentUserFirebaseUid) => {
-        await AuthService.requireAdmin(currentUserFirebaseUid);
-
+    getBasicMetrics: async () => {
         const metrics = await MetricsRepository.getBasicMetrics();
 
         if (!metrics) {

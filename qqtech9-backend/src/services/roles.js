@@ -2,14 +2,16 @@ import { RolesRepository } from '../repositories/roles.js';
 import { Roles } from '../models/roles.js';
 import { isValidUuid } from '../utils/validations.js';
 import { NotFoundError, ValidationError } from '../utils/errors.js';
-import { AuthService } from './auth.js';
+import { UserService } from './users.js';
 
 
 export const RoleService = {
     getAllRoles: async (currentUserFirebaseUid) => {
-        await AuthService.requireAdmin(currentUserFirebaseUid);
+        const currentUser = await UserService.getSelf(currentUserFirebaseUid);
 
-        const roles = await RolesRepository.findAll();
+        const userRoles = currentUser.roles.map(role => role.id);
+
+        const roles = await RolesRepository.findAll(currentUser.profile, userRoles);
         
         return roles;
     },

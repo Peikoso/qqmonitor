@@ -7,11 +7,13 @@ export class Incidents {
         this.ruleId = incident.rule_id ?? incident.ruleId;
         this.status = incident.status ?? 'OPEN';
         this.priority = incident.priority;
-        this.roles = incident.roles;
         this.ackAt = incident.ack_at ?? incident.ackAt;
         this.closedAt = incident.closed_at ?? incident.closedAt;
         this.createdAt = incident.created_at ?? incident.createdAt;
         this.updatedAt = incident.updated_at ?? incident.updatedAt;
+
+        this.roles = incident.roles;
+        this.rule = incident.rule;
     }
 
     static fromArray(incidentsArray) {

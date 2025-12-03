@@ -2,13 +2,23 @@ import { pool } from '../config/database-conn.js';
 import { Roles } from '../models/roles.js';
 
 export const RolesRepository = {
-    findAll: async () => {
-        const result = await pool.query(
-            `
-            SELECT * FROM roles
-            ORDER BY created_at DESC;
-            `
-        );
+    findAll: async (profile, roles) => {
+        const selectQuery = 
+        `
+        SELECT * FROM roles
+        WHERE 
+            $1::varchar = 'admin' 
+            OR id = ANY($2::uuid[])
+        ORDER BY created_at DESC;
+        `
+        
+
+        const values = [
+            profile,
+            roles?.length ? roles : null
+        ];
+
+        const result = await pool.query(selectQuery, values);
 
         return Roles.fromArray(result.rows);
     },

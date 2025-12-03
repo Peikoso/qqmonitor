@@ -20,6 +20,17 @@ export const UserPreferenceService = {
         return userPreference;
     },
 
+    getUserPreferencesByFirebaseUid: async (currentUserFirebaseUid) => {
+        const userPreference = await UserPreferencesRepository.findByFirebaseUid(currentUserFirebaseUid);
+
+        if (!userPreference) {
+            throw new NotFoundError('User preference not found');
+        }
+        
+        return userPreference;
+    },
+
+
     createUserPreference: async (dto, currentUserFirebaseUid) => {
         const newUserPreference = new UserPreferences(dto);
 

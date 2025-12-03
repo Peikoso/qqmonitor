@@ -3,9 +3,7 @@ import { ResponseMetricsDto } from '../dto/metrics/response-metrics-dto.js';
 
 export const MetricsController = {
     getBasicMetrics: async (req, res) => {
-        const currentUserFirebaseUid = req.user.uid;
-
-        const metrics = await MetricService.getBasicMetrics(currentUserFirebaseUid);
+        const metrics = await MetricService.getBasicMetrics();
 
         const response = new ResponseMetricsDto(metrics);
         
