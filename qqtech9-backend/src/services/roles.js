@@ -3,6 +3,7 @@ import { Roles } from '../models/roles.js';
 import { isValidUuid } from '../utils/validations.js';
 import { NotFoundError, ValidationError } from '../utils/errors.js';
 import { UserService } from './users.js';
+import { AuthService } from './auth.js';
 
 
 export const RoleService = {

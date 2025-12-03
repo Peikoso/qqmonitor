@@ -26,19 +26,17 @@ export const AuthService = {
     
   },
 
-  requireAdminOrRole: async (firebaseUid, roles) => {
-    const currentUser = await UsersRepository.findByFirebaseId(firebaseUid);
-
-    if (!currentUser) {
-      throw new UnauthorizedError('User not found.');
-    }
-
-    if (currentUser.profile === 'admin') {
+  requireOperatorAndRole: async (user, rolesId) => {
+    if (user.profile === 'admin') {
       return;
     }
 
-    const hasRole = currentUser.roles.some(userRole =>
-      roles.some(role => role.id === userRole.id)
+    if (user.profile === 'viewer') {
+      throw new ForbiddenError('Insufficient permissions');
+    }
+
+    const hasRole = user.roles.some(userRole =>
+      rolesId.some(roleId => roleId === userRole.id)
     );
 
     if (!hasRole) {

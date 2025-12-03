@@ -1,3 +1,4 @@
+import { pool } from "../config/database-conn.js";
 import { IncidentsRepository, IncidentsLogsRepository } from "../repositories/incidents.js";
 import { Incidents, IncidentsLogs } from '../models/incidents.js';
 import { isValidUuid } from "../utils/validations.js";
@@ -5,7 +6,7 @@ import { ValidationError, NotFoundError } from "../utils/errors.js";
 import { UserService } from "./users.js";
 import { NotificationService } from "./notifications.js";
 import { RuleService } from "./rules.js";
-import { pool } from "../config/database-conn.js";
+import { AuthService } from "./auth.js";
 
 
 export const IncidentService = {
@@ -75,15 +76,17 @@ export const IncidentLogService = {
     },
 
     createIncidentsAction: async (incidentId, dto, currentUserFirebaseUid) => {
+        const user = await UserService.getSelf(currentUserFirebaseUid);
+        const incident = await IncidentService.getIncidentById(incidentId);
+
+        await AuthService.requireOperatorAndRole(user, incident.roles);
+
         const client = await pool.connect();
         
         try {
             await client.query('BEGIN');
 
             const newIncidentsLogs = new IncidentsLogs(dto);
-
-            const user = await UserService.getSelf(currentUserFirebaseUid);
-            const incident = await IncidentService.getIncidentById(incidentId);
             
             newIncidentsLogs.incidentId = incident.id;
             newIncidentsLogs.actionUserId = user.id;
