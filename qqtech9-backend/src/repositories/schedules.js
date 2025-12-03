@@ -15,7 +15,7 @@ export const SchedulesRepository = {
         return Schedules.fromArray(result.rows);
     },
 
-    findCurrentScheduleByRoleId: async (rolesId, date) => {
+    findCurrentScheduleByRolesId: async (rolesId, date) => {
         const selectQuery = 
         `
         SELECT s.* FROM schedules s
@@ -25,12 +25,12 @@ export const SchedulesRepository = {
             $1::uuid[] IS NOT NULL
             AND EXISTS (
                 SELECT 1
-                FROM user_roles ur
+                FROM users_roles ur
                 WHERE ur.user_id = u.id
                 AND ur.role_id = ANY($1::uuid[])
             )
             AND $2 BETWEEN DATE(s.start_time) AND DATE(s.end_time)
-        ORDER BY s.start_time ASC
+        ORDER BY s.start_time ASC, s.created_at ASC
         LIMIT 1;
         `;
 

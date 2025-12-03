@@ -3,7 +3,27 @@ import { UserPreferences } from "../models/user-preferences.js"
 
 
 export const UserPreferencesRepository = {
-    getByFirebaseUid: async (firebaseUid) => {
+    findByUserId: async (userId) => {
+        const selectIdQuery = 
+        `
+        SELECT up.*, array_remove(array_agg(uc.channel_id), NULL) AS channels
+        FROM user_preferences up
+        LEFT JOIN user_preferences_channels uc 
+            ON up.id = uc.user_preferences_id
+        WHERE up.user_id = $1
+        GROUP BY up.id
+        `;
+
+        const result = await pool.query(selectIdQuery, [userId]);
+
+        if(!result.rows[0]){
+            return null;
+        }
+
+        return new UserPreferences(result.rows[0]);
+    },
+
+    findByFirebaseUid: async (firebaseUid) => {
         const selectIdQuery = 
         `
         SELECT 

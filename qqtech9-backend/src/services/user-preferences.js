@@ -5,9 +5,13 @@ import { UserService} from "./users.js";
 import { ChannelService } from "./channels.js"; 
 import { isValidUuid } from "../utils/validations.js";
 
-export const UserPreferenceService = {
-    getUserPreferencesByFirebaseUid: async (currentUserFirebaseUid) => {
-        const userPreference = await UserPreferencesRepository.getByFirebaseUid(currentUserFirebaseUid);
+export const UserPreferenceService = {  
+    getUserPreferencesByUserId: async (userId) => {
+        if(!isValidUuid(userId)){
+            throw new ValidationError('Invalid user ID UUID.');
+        }
+
+        const userPreference = await UserPreferencesRepository.findByUserId(userId);
 
         if (!userPreference) {
             throw new NotFoundError('User preference not found');
@@ -19,7 +23,7 @@ export const UserPreferenceService = {
     createUserPreference: async (dto, currentUserFirebaseUid) => {
         const newUserPreference = new UserPreferences(dto);
 
-        const existingPreference = await UserPreferencesRepository.getByFirebaseUid(currentUserFirebaseUid);   
+        const existingPreference = await UserPreferencesRepository.findByFirebaseUid(currentUserFirebaseUid);   
         if (existingPreference) {
             throw new BusinessLogicError('User preference already exists for this user');
         }

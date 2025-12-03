@@ -232,8 +232,8 @@ CREATE TABLE IF NOT EXISTS audit_logs (
 CREATE TABLE IF NOT EXISTS notifications (
     id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
     incident_id uuid NOT NULL,
-    channel_id uuid NOT NULL,
-    user_id uuid NOT NULL,
+    channel_id uuid,
+    user_id uuid,
     title varchar(150) NOT NULL,
     message text NOT NULL,
     sent_at timestamp,

@@ -52,12 +52,10 @@ export const IncidentService = {
 
         const rule = await RuleService.getRuleById(savedIncident.ruleId);
 
-        await NotificationService.createNotificationForIncidents({
+        await NotificationService.createNotification({
             incidentId: savedIncident.id,
             title: 'Novo Incidente Reportado',
-            message: `
-            Novo Incidente reportado para Regra: ${rule.name}, Prioridade: ${savedIncident.priority}.
-            `,
+            message: `Novo Incidente reportado para Regra: ${rule.name}, Prioridade: ${savedIncident.priority}.`,
         });
 
         return savedIncident;
