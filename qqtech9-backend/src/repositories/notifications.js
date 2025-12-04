@@ -19,7 +19,13 @@ export const NotificationsRepository = {
     },
 
     findByUserId: async (id) => {
-        const selectQuery = 'SELECT * FROM notifications WHERE user_id = $1';
+        const selectQuery = 
+        `
+        SELECT DISTINCT ON (incident_id) * 
+        FROM notifications 
+        WHERE user_id = $1 AND status = 'SENT'
+        ORDER BY incident_id, sent_at DESC
+        `;
         
         const result = await pool.query(selectQuery, [id]);
 

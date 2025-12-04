@@ -3,8 +3,8 @@ import { NotificationsController } from '../controllers/notifications.js';
 
 const router = express.Router();
 
-router.get('/:id', NotificationsController.getNotificationByUserId);
+router.get('/me', NotificationsController.getSelfNotifications);
 router.put('/:id', NotificationsController.updateNotification);
-router.delete('/:id', NotificationsController.deleteNotification);
+//router.delete('/:id', NotificationsController.deleteNotification);
 
 export default router;

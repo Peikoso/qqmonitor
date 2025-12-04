@@ -25,12 +25,8 @@ export const NotificationService = {
     },
 
 
-    getNotificationsByUserId: async (id) => {
-        if(!isValidUuid(id)){
-            throw new ValidationError('Invalid user ID UUID.');
-        }
-
-        const user = await UserService.getSelf(id);
+    getSelfNotifications: async (currentUserFirebaseUid) => {
+        const user = await UserService.getSelf(currentUserFirebaseUid);
 
         const notifications = await NotificationsRepository.findByUserId(user.id);
 

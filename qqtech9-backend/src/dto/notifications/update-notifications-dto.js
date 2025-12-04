@@ -5,7 +5,6 @@ export class UpdateNotificationsDto {
     constructor(notification){
         this.status = notification.status?.trim();
         this.readAt = notification.readAt;
-        this.error = notification.error?.trim();
     }
 
     validate() {

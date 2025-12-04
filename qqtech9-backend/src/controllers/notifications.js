@@ -3,10 +3,10 @@ import { ResponseNotificationsDto } from '../dto/notifications/response-notifica
 import { NotificationService } from '../services/notifications.js';
 
 export const NotificationsController = {
-    getNotificationByUserId: async (req, res) => {
-        const id = req.params.id;
+    getSelfNotifications: async (req, res) => {
+        const currentUserFirebaseUid = req.user.uid;
 
-        const notifications = await NotificationService.getNotificationsByUserId(id);
+        const notifications = await NotificationService.getSelfNotifications(currentUserFirebaseUid);
 
         const response = ResponseNotificationsDto.fromArray(notifications);
         

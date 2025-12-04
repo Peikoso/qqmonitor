@@ -3,10 +3,10 @@ export class ResponseNotificationsDto {
         this.id = notification.id;
         this.incidentId = notification.incidentId;
         this.channelId = notification.channelId;
-        this.userId = notification.userId;
         this.title = notification.title;
         this.message = notification.message;
         this.status = notification.status;
+        this.sentAt = notification.sentAt;
     }
 
     static fromArray(notificationsArray) {
