@@ -12,11 +12,12 @@ export const SQLTestsController = {
     },
 
     createSQLTest: async (req, res) => {
+        const currentUserFirebaseUid = req.user.uid;
         const sqlTestData = req.body;
         
         const dto = new CreateSQLTestDto(sqlTestData).validate();
 
-        const newSQLTest = await SQLTestService.createSQLTest(dto);
+        const newSQLTest = await SQLTestService.createSQLTest(dto, currentUserFirebaseUid);
 
         const response = new ResponseSQLTestDto(newSQLTest);
 

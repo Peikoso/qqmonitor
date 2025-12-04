@@ -27,6 +27,12 @@ export const AuthService = {
     
   },
 
+  requireOperator: async (user) => {
+    if (user.profile !== 'admin' && user.profile !== 'operator') {
+      throw new ForbiddenError('Insufficient permissions');
+    }
+  },
+
   requireOperatorAndRole: async (user, rolesId) => {    
     if (user.profile === 'admin') {
       return;

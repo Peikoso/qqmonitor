@@ -25,5 +25,14 @@ export const SQLTestsRepository = {
         const result = await pool.query(insertQuery, values);
 
         return new SQLTest(result.rows[0]);
+    },
+    
+    executeTest: async (sql) => {
+        try {
+            const result = await pool.query(sql);
+            return { success: true, result: `Query executada com sucesso. Linhas afetadas: ${result.rowCount}` };
+        } catch (error) {
+            return { success: false, result: error.message };
+        }
     }
 };
