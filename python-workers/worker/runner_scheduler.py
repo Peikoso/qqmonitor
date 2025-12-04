@@ -66,7 +66,7 @@ class RunnerScheduler:
             return False
 
         postpone_date = rule.postpone_date
-        if postpone_date and datetime.fromisoformat(str(postpone_date)) > datetime.now():
+        if postpone_date and postpone_date > datetime.now():
             print(f'[Runner Scheduler] Regra "{rule.name}" está adiada até {postpone_date}. Pulando agendamento.')
             return False
 
@@ -78,7 +78,7 @@ class RunnerScheduler:
         now = time.time() * 1000  # milliseconds
 
         if last_run_at:
-            time_since_last_run = now - datetime.fromisoformat(str(last_run_at)).timestamp() * 1000
+            time_since_last_run = now - last_run_at.timestamp() * 1000
             if time_since_last_run < execution_interval_ms:
                 print(f'[Runner Scheduler] Regra "{rule.name}" foi executada recentemente. Pulando agendamento.')
                 return False

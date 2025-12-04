@@ -53,6 +53,7 @@ services:
         condition: service_healthy
     environment:
       DATABASE_URL: postgresql+asyncpg://${POSTGRES_USER}:${POSTGRES_PASSWORD}@${DB_HOST}:${POSTGRES_PORT}/${POSTGRES_DB}
+      API_INCIDENTS_URL: ${API_INCIDENTS_URL}
     env_file:
       - .env
     command: ["sh", "-c", "echo 'Esperando a API criar o banco...'; sleep 15; python -u -m worker.runner_scheduler"]
@@ -70,6 +71,7 @@ services:
         condition: service_healthy
     environment:
       DATABASE_URL: postgresql+asyncpg://${POSTGRES_USER}:${POSTGRES_PASSWORD}@${DB_HOST}:${POSTGRES_PORT}/${POSTGRES_DB}
+      API_INCIDENTS_URL: ${API_INCIDENTS_URL}
     env_file:
       - .env
     command: ["sh", "-c", "echo 'Esperando a API criar o banco...'; sleep 15; python -u -m worker.runner_worker"]

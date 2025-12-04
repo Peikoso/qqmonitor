@@ -23,6 +23,7 @@ class RulesRepository:
             rule = Rules(**rule_dict)
             return rule
 
+    @staticmethod
     async def update_disabled_status(rule_id, is_active ):
         query = text(
         """

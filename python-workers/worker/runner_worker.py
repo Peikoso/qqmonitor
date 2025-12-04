@@ -104,8 +104,6 @@ class RunnerWorker:
                     'priority': rule.priority
                 }
                 
-                print(API_INCIDENTS_URL)
-                
                 try:
                     response = requests.post(API_INCIDENTS_URL, json=payload)
                     

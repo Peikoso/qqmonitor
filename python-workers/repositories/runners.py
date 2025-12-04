@@ -79,7 +79,7 @@ class RunnerQueueRepository:
         """
         SELECT * FROM runner_queue
         WHERE status = 'PENDING'
-        AND scheduled_for AT TIME ZONE 'UTC' <= NOW()
+        AND scheduled_for <= NOW()
         ORDER BY scheduled_for ASC
         LIMIT :limit;
         """
