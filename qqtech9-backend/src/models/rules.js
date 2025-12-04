@@ -28,6 +28,14 @@ export class Rules {
         return rulesArray.map((rule) => new Rules(rule));
     }
 
+    reexecute() {
+        if(!this.isActive){
+            this.isActive = true;
+        }
+
+        return this;
+    }
+
     validateBusinessLogic() {
         if (!sqlValidantion(this.sql)) {
             throw new BusinessLogicError('SQL contains forbidden commands');

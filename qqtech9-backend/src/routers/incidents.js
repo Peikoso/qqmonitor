@@ -7,7 +7,8 @@ router.get('/', IncidentsController.getAllIncidents);
 router.get('/:id', IncidentsController.getIncidentById);
 router.post('/', IncidentsController.createIncident)
 
-router.put('/:id/action', IncidentsLogsController.createIncidentsAction);
+router.post('/:id/action', IncidentsLogsController.createIncidentsAction);
+router.post('/:id/reexecute', IncidentsLogsController.reexecuteIncidentRule);
 
 router.get('/:id/logs', IncidentsLogsController.getIncidentLogsByIncidentId);
 

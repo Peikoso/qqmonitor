@@ -23,9 +23,10 @@ export const IncidentsController = {
     },
 
     getIncidentById: async(req, res) => {
+        const currentUserFirebaseUid = req.user.uid;
         const id = req.params.id
 
-        const incident = await IncidentService.getIncidentById(id);
+        const incident = await IncidentService.getIncidentByIdProtected(id, currentUserFirebaseUid);
 
         const response = new ResponseIncidentsDto(incident);
 
@@ -70,5 +71,14 @@ export const IncidentsLogsController = {
         const response = new ResponseIncidentsLogsDto(newIncidentLog);
 
         return res.status(201).json(response);
-    }
+    },
+
+    reexecuteIncidentRule: async(req, res) => {
+        const currentUserFirebaseUid = req.user.uid;
+        const incidentId = req.params.id;
+
+        await IncidentLogService.reexecuteIncidentRule(incidentId, currentUserFirebaseUid);
+
+        return res.status(204).send();
+    },
 };

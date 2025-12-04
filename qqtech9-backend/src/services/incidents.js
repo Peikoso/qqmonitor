@@ -46,6 +46,15 @@ export const IncidentService = {
 
     },
 
+    getIncidentByIdProtected: async (id, currentUserFirebaseUid) => {
+        const incident = await IncidentService.getIncidentById(id);
+        const user = await UserService.getSelf(currentUserFirebaseUid);
+
+        await AuthService.requireRole(user, incident.roles);
+
+        return incident;
+    },
+
     createIncident: async (dto) => {
         const newIncident = new Incidents(dto);
 
@@ -108,5 +117,13 @@ export const IncidentLogService = {
             client.release();
         }
 
+    },
+
+    reexecuteIncidentRule: async (incidentId, currentUserFirebaseUid) => {
+        const incident = await IncidentService.getIncidentById(incidentId);
+
+        const rule = await RuleService.getRuleById(incident.ruleId);
+
+        await RuleService.updateRule(rule.id, rule.reexecute(), currentUserFirebaseUid);
     }
 };

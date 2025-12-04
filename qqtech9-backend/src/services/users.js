@@ -40,12 +40,10 @@ export const UserService = {
         return user;
     },
 
-    getUserById: async (id, currentUserFirebaseUid) => {
+    getUserById: async (id) => {
         if(!isValidUuid(id)){
             throw new ValidationError('Invalid User UUID.');
         }
-
-        await AuthService.requireAdmin(currentUserFirebaseUid);
 
         const user = await UsersRepository.findById(id);
 
@@ -70,7 +68,7 @@ export const UserService = {
         newUser.firebaseId = fireBaseUser.uid;
 
         for(const roleId of newUser.roles){
-            await RoleService.getRoleById(roleId, currentUserFirebaseUid);
+            await RoleService.getRoleById(roleId);
         }
 
         try{
@@ -94,6 +92,8 @@ export const UserService = {
     },
 
     approveUser: async (userId, currentUserFirebaseUid) => {
+        await AuthService.requireAdmin(currentUserFirebaseUid);
+
         const existingUser = await UserService.getUserById(userId, currentUserFirebaseUid);
          
         const fireBaseUser = await admin.auth().createUser({
@@ -112,10 +112,12 @@ export const UserService = {
     },
 
     adminUpdateUser: async (id, dto, currentUserFirebaseUid) => {
+        await AuthService.requireAdmin(currentUserFirebaseUid);
+
         const existingUser = await UserService.getUserById(id, currentUserFirebaseUid);
 
         for(const roleId of dto.roles){
-            await RoleService.getRoleById(roleId, currentUserFirebaseUid);
+            await RoleService.getRoleById(roleId);
         }
 
         const updatedUser = new Users({
@@ -156,6 +158,8 @@ export const UserService = {
     },
 
     deleteUser: async (id, currentUserFirebaseUid) => {
+        await AuthService.requireAdmin(currentUserFirebaseUid);
+
         const existingUser = await UserService.getUserById(id, currentUserFirebaseUid);
 
         await UsersRepository.delete(id);

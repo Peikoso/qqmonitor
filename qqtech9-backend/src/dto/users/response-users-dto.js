@@ -16,3 +16,14 @@ export class ResponseUsersDto {
         return usersArray.map((user) => new ResponseUsersDto(user));
     }
 }
+
+export class ResponseUsersBasicDto {
+    constructor(user){
+        this.id = user.id;
+        this.name = user.name;
+    }
+    
+    static fromArray(usersArray) {
+        return usersArray.map((user) => new ResponseUsersBasicDto(user));
+    }
+}

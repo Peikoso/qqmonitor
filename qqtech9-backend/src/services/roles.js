@@ -22,8 +22,6 @@ export const RoleService = {
             throw new ValidationError('Invalid Role UUID.');
         }
 
-        await AuthService.requireAdmin(currentUserFirebaseUid);
-
         const role = await RolesRepository.findById(id);
 
         if(!role){
@@ -44,6 +42,8 @@ export const RoleService = {
     },
 
     updateRole: async (id, dto, currentUserFirebaseUid) => {
+        await AuthService.requireAdmin(currentUserFirebaseUid);
+
         const existingRole = await RoleService.getRoleById(id, currentUserFirebaseUid);
 
         const updatedRole = new Roles({
@@ -58,6 +58,8 @@ export const RoleService = {
     },
 
     deleteRole: async (id, currentUserFirebaseUid) => {
+        await AuthService.requireAdmin(currentUserFirebaseUid);
+
         await RoleService.getRoleById(id, currentUserFirebaseUid);
         
         await RolesRepository.delete(id);

@@ -19,13 +19,13 @@ export const AuthMiddleware = async (req, res, next) => {
     return next();
   }
 
-  const isTokenAppRoute = tokenAppRoutes.some(
+  /*const isTokenAppRoute = tokenAppRoutes.some(
     route => route.method === req.method && req.originalUrl.startsWith(route.path)
   )
 
   if(isTokenAppRoute){
     return next();
-  }
+  }*/
 
   const authHeader = req.headers.authorization;
 

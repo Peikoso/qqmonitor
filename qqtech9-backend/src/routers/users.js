@@ -5,7 +5,7 @@ const router = express.Router();
 
 router.get('/', UsersController.getAllUsers);
 router.get('/me', UsersController.getSelf);
-router.get('/:id', UsersController.getUserById);
+router.get('/:id', UsersController.getUserNameById);
 router.post('/', UsersController.createUser);
 router.post('/register', UsersController.registerUser);
 router.post('/:userId/approve', UsersController.approveUser)

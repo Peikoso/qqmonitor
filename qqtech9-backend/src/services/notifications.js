@@ -30,9 +30,9 @@ export const NotificationService = {
             throw new ValidationError('Invalid user ID UUID.');
         }
 
-        await UserService.getUserById(id);
+        const user = await UserService.getSelf(id);
 
-        const notifications = await NotificationsRepository.findByUserId(id);
+        const notifications = await NotificationsRepository.findByUserId(user.id);
 
         return notifications;
     },

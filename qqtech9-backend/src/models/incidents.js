@@ -41,8 +41,10 @@ export class IncidentsLogs {
         this.previousStatus = incidentsLog.previous_status ?? incidentsLog.previousStatus;
         this.currentStatus = incidentsLog.current_status ?? incidentsLog.currentStatus;
         this.comment = incidentsLog.comment;
-        this.actionUserId = incidentsLog.action_user_id ?? incidentsLog.actionUserId;
         this.createdAt = incidentsLog.created_at ?? incidentsLog.createdAt;
+        
+        this.actionUserId = incidentsLog.action_user_id ?? incidentsLog.actionUserId;
+        this.actionUser = incidentsLog.action_user ?? incidentsLog.actionUser;
     }
 
     static fromArray(incidentsLogsArray){

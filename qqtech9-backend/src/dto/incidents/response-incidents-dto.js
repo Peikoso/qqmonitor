@@ -19,14 +19,15 @@ export class ResponseIncidentsDto {
 };
 
 export class ResponseIncidentsLogsDto {
-    constructor(IncidentsLogs){
-        this.id = IncidentsLogs.id;
-        this.incidentId = IncidentsLogs.incidentId;
-        this.previousStatus = IncidentsLogs.previousStatus;
-        this.currentStatus = IncidentsLogs.currentStatus;
-        this.comment = IncidentsLogs.comment;
-        this.actionUserId = IncidentsLogs.actionUserId;
-        this.createdAt = IncidentsLogs.createdAt;
+    constructor(incidentsLogs){
+        this.id = incidentsLogs.id;
+        this.incidentId = incidentsLogs.incidentId;
+        this.previousStatus = incidentsLogs.previousStatus;
+        this.currentStatus = incidentsLogs.currentStatus;
+        this.comment = incidentsLogs.comment;
+        this.createdAt = incidentsLogs.createdAt;
+        
+        this.actionUser = incidentsLogs.actionUser;
     }
     
     static fromArray(incidentsLogs){

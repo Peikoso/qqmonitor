@@ -20,13 +20,14 @@ export const AuthService = {
     if (!currentUser) {
       throw new UnauthorizedError('User not found.');
     }
+
     if (currentUser.profile !== 'admin') {
       throw new ForbiddenError('Insufficient permissions');
     }
     
   },
 
-  requireOperatorAndRole: async (user, rolesId) => {
+  requireOperatorAndRole: async (user, rolesId) => {    
     if (user.profile === 'admin') {
       return;
     }
@@ -43,5 +44,21 @@ export const AuthService = {
       throw new ForbiddenError('Insufficient permissions');
     }
     
-  }
+  },
+
+  requireRole: async (user, rolesId) => {    
+    if (user.profile === 'admin') {
+      return;
+    }
+
+    const hasRole = user.roles.some(userRole =>
+      rolesId.some(roleId => roleId === userRole.id)
+    );
+
+    if (!hasRole) {
+      throw new ForbiddenError('Insufficient permissions');
+    }
+    
+  },
+    
 };

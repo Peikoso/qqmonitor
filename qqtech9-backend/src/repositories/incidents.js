@@ -84,7 +84,16 @@ export const IncidentsRepository = {
         const selectIdQuery =
         `
         SELECT 
-            i.*, array_remove(array_agg(ro.id), NULL) AS roles
+            i.*, 
+            array_remove(array_agg(ro.id), NULL) AS roles,
+            CASE 
+                WHEN r.id IS NOT NULL THEN
+                    jsonb_build_object(
+                        'id', r.id,
+                        'name', r.name
+                    )
+                ELSE NULL
+            END AS rule
         FROM incidents i
         LEFT JOIN rules r 
             ON i.rule_id = r.id
@@ -93,7 +102,7 @@ export const IncidentsRepository = {
         LEFT JOIN roles ro
             ON rr.role_id = ro.id
         WHERE i.id = $1
-        GROUP BY i.id
+        GROUP BY i.id, r.id;
         
         `;
 
@@ -161,7 +170,15 @@ export const IncidentsLogsRepository = {
     findByIncidentId: async (incidentId) => {
         const selectByIncidentIdQuery =
         `
-        SELECT * FROM incidents_events
+        SELECT 
+            ie.*,
+            jsonb_build_object(
+                'id', u.id,
+                'name', u.name
+            ) AS action_user
+        FROM incidents_events ie
+        LEFT JOIN users u
+            ON ie.action_user_id = u.id
         WHERE incident_id = $1
         ORDER BY created_at DESC;
         `;

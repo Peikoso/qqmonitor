@@ -32,7 +32,7 @@ export const RuleService = {
         return rules;
     },
 
-    getRuleById: async (id, currentUserFirebaseUid) => {
+    getRuleById: async (id) => {
         if(!isValidUuid(id)){
             throw new ValidationError('Invalid Rule UUID.')
         }
@@ -61,7 +61,7 @@ export const RuleService = {
             newRule.userCreatorId = user.id;
 
             for(const roleId of newRule.roles){
-                await RoleService.getRoleById(roleId, currentUserFirebaseUid);
+                await RoleService.getRoleById(roleId);
             }
 
             const savedRule = await RulesRepository.create(newRule, client);
@@ -81,8 +81,11 @@ export const RuleService = {
     },
 
     updateRule: async (id, dto, currentUserFirebaseUid) => {
-        const existingRule = await RuleService.getRuleById(id, currentUserFirebaseUid);
-
+        const user = await UserService.getSelf(currentUserFirebaseUid);
+        const existingRule = await RuleService.getRuleById(id);
+        
+        await AuthService.requireOperatorAndRole(user, existingRule.roles);
+        
         const updatedRule = new Rules({
             ...existingRule,
             ...dto,
@@ -90,7 +93,7 @@ export const RuleService = {
         }).validateBusinessLogic();
 
         for(const roleId of updatedRule.roles){
-            await RoleService.getRoleById(roleId, currentUserFirebaseUid);
+            await RoleService.getRoleById(roleId);
         }
 
         const savedRule = await RulesRepository.update(updatedRule);
@@ -99,7 +102,9 @@ export const RuleService = {
     },
 
     deleteRule: async (id, currentUserFirebaseUid) => {
-        await RuleService.getRuleById(id, currentUserFirebaseUid);
+        await AuthService.requireAdmin(currentUserFirebaseUid);
+
+        await RuleService.getRuleById(id);
         
         await RulesRepository.delete(id);
     }
