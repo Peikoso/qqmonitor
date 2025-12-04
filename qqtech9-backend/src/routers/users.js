@@ -9,8 +9,8 @@ router.get('/:id', UsersController.getUserNameById);
 router.post('/', UsersController.createUser);
 router.post('/register', UsersController.registerUser);
 router.post('/:userId/approve', UsersController.approveUser)
-router.put('/me', UsersController.userUpdateSelf);
-router.put('/:id', UsersController.adminUpdateUser);
+router.patch('/me', UsersController.userUpdateSelf);
+router.patch('/:id', UsersController.adminUpdateUser);
 router.delete('/:id', UsersController.deleteUser);
 
 export default router;

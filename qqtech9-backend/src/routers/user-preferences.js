@@ -5,7 +5,7 @@ const router = express.Router();
 
 router.get('/', UserPreferencesController.getUserPreferences);
 router.post('/', UserPreferencesController.createUserPreferences);
-router.put('/', UserPreferencesController.updateUserPreferences);
+router.patch('/', UserPreferencesController.updateUserPreferences);
 router.delete('/', UserPreferencesController.deleteUserPreferences);
 
 export default router;
