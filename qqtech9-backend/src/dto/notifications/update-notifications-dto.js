@@ -14,10 +14,7 @@ export class UpdateNotificationsDto {
         if(this.readAt && !validateTimestampFormat(this.readAt)) {
             throw new ValidationError('ReadAt must be in a valid timestamp format');
         }
-        if(this.error && typeof this.error !== 'string') {
-            throw new ValidationError('Error must be a string');
-        }
-
+        
         return this;
     }
 

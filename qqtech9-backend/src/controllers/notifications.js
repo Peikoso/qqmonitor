@@ -14,12 +14,13 @@ export const NotificationsController = {
     },
     
     updateNotification: async (req, res) => {
+        const currentUserFirebaseUid = req.user.uid;
         const id = req.params.id;
         const notificationData = req.body;
 
         const dto = new UpdateNotificationsDto(notificationData).validate();
 
-        const updatedNotification = await NotificationService.updateNotification(id, dto);
+        const updatedNotification = await NotificationService.updateNotification(id, dto, currentUserFirebaseUid);
 
         const response = new ResponseNotificationsDto(updatedNotification);
 

@@ -80,8 +80,13 @@ export const NotificationService = {
         }
     },
 
-    updateNotification: async (id, dto) => {
+    updateNotification: async (id, dto, currentUserFirebaseUid) => {
         const existingNotification = await NotificationService.getNotificationById(id);
+        const user = await UserService.getSelf(currentUserFirebaseUid);
+
+        if(existingNotification.userId !== user.id){
+            throw new NotFoundError('Notification not found for the current user.');
+        }
 
         const updatedNotification = new Notifications({
             ...existingNotification,
