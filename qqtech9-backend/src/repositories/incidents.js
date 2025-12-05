@@ -80,7 +80,7 @@ export const IncidentsRepository = {
         return Incidents.fromArray(result.rows);
     },
 
-    findById: async(id) => {
+    findById: async(id, client = pool) => {
         const selectIdQuery =
         `
         SELECT 
@@ -106,7 +106,7 @@ export const IncidentsRepository = {
         
         `;
 
-        const result = await pool.query(selectIdQuery, [id]);
+        const result = await client.query(selectIdQuery, [id]);
 
         if(!result.rows[0]){
             return null;

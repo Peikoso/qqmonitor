@@ -1,6 +1,5 @@
 import { AuditLogs } from "../models/audit-logs.js";
 import { AuditLogsRepository } from "../repositories/audit-logs.js";
-import { UserService } from "./users.js";
 
 export const AuditLogService = {
     getAllAuditLogs: async () => {
@@ -9,12 +8,10 @@ export const AuditLogService = {
         return auditLogs;
     },
 
-    createAuditLog: async (dto) => {
-        const auditLog = new AuditLogs(dto).validateBusinessLogic();
+    createAuditLog: async (auditLogData, client) => {
+        const auditLog = new AuditLogs(auditLogData).validateBusinessLogic();
 
-        await UserService.getUserById(auditLog.userId);
-
-        const savedAuditLog = await AuditLogsRepository.create(auditLog);
+        const savedAuditLog = await AuditLogsRepository.create(auditLog, client);
 
         return savedAuditLog;
     },

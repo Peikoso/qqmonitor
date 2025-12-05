@@ -7,6 +7,7 @@ import { UserService } from "./users.js";
 import { NotificationService } from "./notifications.js";
 import { RuleService } from "./rules.js";
 import { AuthService } from "./auth.js";
+import { AuditLogService } from "./audit-logs.js";
 
 
 export const IncidentService = {
@@ -73,7 +74,6 @@ export const IncidentService = {
 };
 
 export const IncidentLogService = {
-
     getIncidentesLogsByIncidentId: async (incidentId) => {
         if(!isValidUuid(incidentId)){
             throw new ValidationError('Invalid Incident UUID.');
@@ -103,8 +103,22 @@ export const IncidentLogService = {
             
             const savedIncidentsLogs = await IncidentsLogsRepository.create(newIncidentsLogs, client);
 
+            const oldIncident = JSON.parse(JSON.stringify(incident));
+            
             incident.updateStatus(savedIncidentsLogs);
             await IncidentsRepository.update(incident, client);
+            const updatedIncident = await IncidentsRepository.findById(incident.id, client);
+
+            const auditLog = {
+                entityId: incident.id,
+                entityType: 'incidents',
+                actionType: 'UPDATE',
+                oldValue: oldIncident,
+                newValue: updatedIncident,
+                userId: user.id
+            }
+
+            await AuditLogService.createAuditLog(auditLog, client);
 
             await client.query('COMMIT');
 

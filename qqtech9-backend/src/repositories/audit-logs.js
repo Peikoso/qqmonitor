@@ -8,7 +8,7 @@ export const AuditLogsRepository = {
         return AuditLogs.fromArray(result.rows);
     },
 
-    create: async (auditLog) => {
+    create: async (auditLog, client = pool) => {
         const insertQuery = 
         `
         INSERT INTO audit_logs (entity_id, entity_type, action_type, old_value, new_value, user_id)
@@ -25,7 +25,7 @@ export const AuditLogsRepository = {
             auditLog.userId
         ];
 
-        const result = await pool.query(insertQuery, values);
+        const result = await client.query(insertQuery, values);
 
         return new AuditLogs(result.rows[0]);
     },
