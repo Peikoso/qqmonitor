@@ -84,7 +84,6 @@ CREATE TABLE IF NOT EXISTS rules (
     timeout_ms integer NOT NULL,
     start_time time NOT NULL,
     end_time time NOT NULL,
-    notification_enabled boolean NOT NULL DEFAULT true,
     is_active boolean NOT NULL DEFAULT true,
     silence_mode boolean NOT NULL DEFAULT false,
     postpone_date timestamp DEFAULT NULL,

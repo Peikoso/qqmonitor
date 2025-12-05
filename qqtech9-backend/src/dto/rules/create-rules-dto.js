@@ -14,10 +14,9 @@ export class CreateRulesDto {
         this.timeoutMs = Number(rule.timeoutMs);
         this.startTime = rule.startTime;
         this.endTime = rule.endTime;
-        this.notificationEnabled = rule.notificationEnabled;
-        this.isActive = rule.isActive;
         this.silenceMode = rule.silenceMode;
         this.postponeDate = rule.postponeDate;
+        this.isActive = rule.isActive;
     }
 
     validate() {
@@ -54,8 +53,8 @@ export class CreateRulesDto {
         if(!validateTimeFormat(this.endTime)) {
             throw new ValidationError('End time must be in the format HH:MM:SS');
         }
-        if(typeof this.notificationEnabled !== 'boolean') {
-            throw new ValidationError('Notification enabled must be a boolean');
+        if(typeof this.silenceMode !== 'boolean') {
+            throw new ValidationError('Silence mode must be a boolean');
         }
         if(typeof this.isActive !== 'boolean') {
             throw new ValidationError('Is active must be a boolean');

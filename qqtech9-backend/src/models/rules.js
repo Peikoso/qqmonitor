@@ -15,7 +15,6 @@ export class Rules {
         this.timeoutMs = rule.timeout_ms ?? rule.timeoutMs;
         this.startTime = rule.start_time ?? rule.startTime;
         this.endTime = rule.end_time ?? rule.endTime;
-        this.notificationEnabled = rule.notification_enabled ?? rule.notificationEnabled;
         this.isActive = rule.is_active ?? rule.isActive;
         this.silenceMode = rule.silence_mode ?? rule.silenceMode;
         this.postponeDate = rule.postpone_date ?? rule.postponeDate;

@@ -11,7 +11,6 @@ export class ResponseRulesDto {
     this.timeoutMs = rule.timeoutMs;
     this.startTime = rule.startTime;
     this.endTime = rule.endTime;
-    this.notificationEnabled = rule.notificationEnabled;
     this.silenceMode = rule.silenceMode;
     this.postponeDate = rule.postponeDate;
     this.isActive = rule.isActive;

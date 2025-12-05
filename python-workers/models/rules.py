@@ -15,7 +15,6 @@ class Rules(Base):
     timeout_ms = Column(Integer)
     start_time = Column(Time)
     end_time = Column(Time)
-    notification_enabled = Column(Boolean, default=False)
     is_active = Column(Boolean, default=True)
     silence_mode = Column(Boolean, default=False)
     postpone_date = Column(DateTime)

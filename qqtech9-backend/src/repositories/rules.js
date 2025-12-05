@@ -88,8 +88,8 @@ export const RulesRepository = {
         const insertRuleQuery = 
         `
         INSERT INTO rules
-        (name, description, database_type, sql, priority, execution_interval_ms, max_error_count, timeout_ms, start_time, end_time, notification_enabled, is_active, silence_mode, postpone_date, user_creator_id)
-        VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15)
+        (name, description, database_type, sql, priority, execution_interval_ms, max_error_count, timeout_ms, start_time, end_time, is_active, silence_mode, postpone_date, user_creator_id)
+        VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14)
         RETURNING id; 
         `;
         
@@ -104,7 +104,6 @@ export const RulesRepository = {
             rule.timeoutMs,
             rule.startTime,
             rule.endTime,
-            rule.notificationEnabled,
             rule.isActive,
             rule.silenceMode,
             rule.postponeDate,
@@ -154,12 +153,11 @@ export const RulesRepository = {
                 timeout_ms = $7,
                 start_time = $8,
                 end_time = $9,
-                notification_enabled = $10,
-                is_active = $11,
-                silence_mode = $12,
-                postpone_date = $13,
-                updated_at = $14
-            WHERE id = $15;
+                is_active = $10,
+                silence_mode = $11,
+                postpone_date = $12,
+                updated_at = $13
+            WHERE id = $14;
             `;
 
             const values = [
@@ -172,7 +170,6 @@ export const RulesRepository = {
                 rule.timeoutMs,
                 rule.startTime,
                 rule.endTime,
-                rule.notificationEnabled,
                 rule.isActive,
                 rule.silenceMode,
                 rule.postponeDate,
