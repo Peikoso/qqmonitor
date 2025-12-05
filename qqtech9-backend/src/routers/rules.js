@@ -5,7 +5,7 @@ const router = express.Router();
 
 router.get('/', RulesController.getAllRules);
 router.post('/', RulesController.createRule);
-router.put('/:id', RulesController.updateRule);
+router.patch('/:id', RulesController.updateRule);
 router.delete('/:id', RulesController.deleteRule);
 
 export default router;
