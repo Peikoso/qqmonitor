@@ -220,6 +220,34 @@ export const RulesRepository = {
 
     },
 
+    updateSilenceMode: async (id, silenceMode) => {
+        const updateSilenceModeQuert = 
+        `
+        UPDATE rules
+        SET silence_mode = $1
+        WHERE id = $2
+        RETURNING *;
+        `
+
+        const result = await pool.query(updateSilenceModeQuert, [silenceMode, id]);
+
+        return new Rules(result.rows[0]);
+    },
+
+    updateActiveStatus: async (id, isActive) => {
+        const updateActiveStatusQuery = 
+        `
+        UPDATE rules
+        SET is_active = $1
+        WHERE id = $2
+        RETURNING *;
+        `;
+
+        const result = await pool.query(updateActiveStatusQuery, [isActive, id]);
+
+        return new Rules(result.rows[0]);
+    },
+
     delete: async (id) => {
         const deleteQuery = ` DELETE FROM rules WHERE id = $1; `;
 

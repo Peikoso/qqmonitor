@@ -101,6 +101,28 @@ export const RuleService = {
         return savedRule;
     },
 
+    updateSilenceMode: async (id, currentUserFirebaseUid) => {
+        const user = await UserService.getSelf(currentUserFirebaseUid);
+        const existingRule = await RuleService.getRuleById(id);
+
+        await AuthService.requireOperatorAndRole(user, existingRule.roles);
+
+        const updatedRule = await RulesRepository.updateSilenceMode(existingRule.id, !existingRule.silenceMode);
+
+        return updatedRule;
+    },
+
+    updateActiveStatus: async (id, currentUserFirebaseUid) => {
+        const user = await UserService.getSelf(currentUserFirebaseUid);
+        const existingRule = await RuleService.getRuleById(id);
+
+        await AuthService.requireOperatorAndRole(user, existingRule.roles);
+
+        const updatedRule = await RulesRepository.updateActiveStatus(existingRule.id, !existingRule.isActive);
+
+        return updatedRule;
+    },
+
     deleteRule: async (id, currentUserFirebaseUid) => {
         await AuthService.requireAdmin(currentUserFirebaseUid);
 

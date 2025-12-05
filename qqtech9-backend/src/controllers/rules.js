@@ -50,6 +50,28 @@ export const RulesController = {
         return res.status(200).json(response);
     },
 
+    updateRuleSilenceMode: async (req, res) => {
+        const currentUserFirebaseUid = req.user.uid;
+        const id = req.params.id;
+        
+        const updatedRule = await RuleService.updateRuleSilenceMode(id, currentUserFirebaseUid);
+
+        const response = new ResponseRulesDto(updatedRule); 
+        
+        return res.status(200).json(response);
+    },
+
+    updateRuleActiveStatus: async (req, res) => {
+        const currentUserFirebaseUid = req.user.uid;
+        const id = req.params.id;
+
+        const updatedRule = await RuleService.updateRuleActiveStatus(id, currentUserFirebaseUid);
+
+        const response = new ResponseRulesDto(updatedRule);
+
+        return res.status(200).json(response);
+    },
+
     deleteRule: async (req, res) => {
         const currentUserFirebaseUid = req.user.uid;
         const id = req.params.id;
