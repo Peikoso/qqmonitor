@@ -3,6 +3,7 @@ export class ResponseRulesDto {
     this.id = rule.id;
     this.name = rule.name;
     this.description = rule.description;
+    this.databaseType = rule.databaseType;
     this.sql = rule.sql;
     this.priority = rule.priority;
     this.roles = rule.roles;

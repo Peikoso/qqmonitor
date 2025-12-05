@@ -33,11 +33,19 @@ export const RulesRepository = {
                     $5::uuid[] IS NOT NULL
                     AND EXISTS (
                         SELECT 1
-                        FROM rules_roles rr2
-                        WHERE rr2.rule_id = r.id
-                        AND rr2.role_id = ANY($5::uuid[])
-                        AND ($6::uuid IS NULL OR rr2.role_id = $6)
+                        FROM rules_roles rr_auth
+                        WHERE rr_auth.rule_id = r.id
+                        AND rr_auth.role_id = ANY($5::uuid[])
                     )
+                )
+            )
+            AND (
+                $6::uuid IS NULL 
+                OR EXISTS (
+                    SELECT 1 
+                    FROM rules_roles rr_filter 
+                    WHERE rr_filter.rule_id = r.id 
+                    AND rr_filter.role_id = $6
                 )
             )
         GROUP BY r.id
