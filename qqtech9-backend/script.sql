@@ -263,11 +263,9 @@ CREATE TABLE IF NOT EXISTS sql_test_logs (
 CREATE TABLE IF NOT EXISTS escalation_policy (
     id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
     timeout_ms integer NOT NULL,
-    role_id uuid NOT NULL,
     is_active boolean NOT NULL DEFAULT true,
     created_at timestamp NOT NULL DEFAULT now(),
     updated_at timestamp NOT NULL DEFAULT now(),
-    CONSTRAINT fk_escalation_policy_role FOREIGN KEY (role_id) REFERENCES roles(id) ON DELETE CASCADE
 );
 
 -- ======================================

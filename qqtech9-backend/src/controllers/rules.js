@@ -54,7 +54,7 @@ export const RulesController = {
         const currentUserFirebaseUid = req.user.uid;
         const id = req.params.id;
         
-        const updatedRule = await RuleService.updateRuleSilenceMode(id, currentUserFirebaseUid);
+        const updatedRule = await RuleService.updateSilenceMode(id, currentUserFirebaseUid);
 
         const response = new ResponseRulesDto(updatedRule); 
         

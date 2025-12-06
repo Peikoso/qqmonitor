@@ -33,14 +33,13 @@ export const EscalationPoliciesRepository = {
         const insertQuery =
         `
         INSERT INTO escalation_policy
-        (timeout_ms, role_id, is_active)
-        VALUES ($1, $2, $3)
+        (timeout_ms, is_active)
+        VALUES ($1, $2)
         RETURNING *;
         `;
 
         const values = [
             escalationPolicy.timeoutMs, 
-            escalationPolicy.roleId, 
             escalationPolicy.isActive
         ];
 
@@ -54,16 +53,14 @@ export const EscalationPoliciesRepository = {
         `
         UPDATE escalation_policy
         SET timeout_ms = $1,
-            role_id = $2,
-            is_active = $3,
-            updated_at = $4
-        WHERE id = $5
+            is_active = $2,
+            updated_at = $3
+        WHERE id = $4
         RETURNING *;
         `;
 
         const values = [
             escalationPolicy.timeoutMs,
-            escalationPolicy.roleId,
             escalationPolicy.isActive,
             escalationPolicy.updatedAt,
             escalationPolicy.id

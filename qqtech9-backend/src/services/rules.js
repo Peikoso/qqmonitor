@@ -112,7 +112,7 @@ export const RuleService = {
         return updatedRule;
     },
 
-    updateActiveStatus: async (id, currentUserFirebaseUid) => {
+    updateRuleActiveStatus: async (id, currentUserFirebaseUid) => {
         const user = await UserService.getSelf(currentUserFirebaseUid);
         const existingRule = await RuleService.getRuleById(id);
 
