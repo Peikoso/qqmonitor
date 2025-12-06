@@ -18,7 +18,6 @@ export class ResponseRunnerQueueDto {
         this.id = runnerQueue.id;
         this.runnerId = runnerQueue.runnerId;
         this.scheduledFor = runnerQueue.scheduledFor;
-        this.queuedAt = runnerQueue.queuedAt;
         this.startedAt = runnerQueue.startedAt;
         this.finishedAt = runnerQueue.finishedAt;
         this.status = runnerQueue.status;

@@ -24,7 +24,6 @@ export class RunnerQueue{
         this.runnerId = runnerQueue.runner_id ?? runnerQueue.runnerId;
         this.status = runnerQueue.status;
         this.scheduledFor = runnerQueue.scheduled_for ?? runnerQueue.scheduledFor;
-        this.queuedAt = runnerQueue.queued_at ?? runnerQueue.queuedAt;
         this.startedAt = runnerQueue.started_at ?? runnerQueue.startedAt;
         this.finishedAt = runnerQueue.finished_at ?? runnerQueue.finishedAt;
         this.attemptCount = runnerQueue.attempt_count ?? runnerQueue.attemptCount;

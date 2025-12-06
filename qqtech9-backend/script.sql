@@ -185,11 +185,10 @@ CREATE TABLE IF NOT EXISTS runner_queue (
     id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
     runner_id uuid NOT NULL,
     status varchar(20) NOT NULL DEFAULT 'PENDING', -- PENDING, PROCESSING, COMPLETED, FAILED
-    scheduled_for timestamp NOT NULL, -- Quando deveria ter rodado (do runners)
-    queued_at timestamp NOT NULL DEFAULT now(),
+    scheduled_for timestamp NOT NULL,
     started_at timestamp,
     finished_at timestamp,
-    attempt_count integer DEFAULT 0, -- Para retentativas
+    attempt_count integer DEFAULT 0,
     CONSTRAINT fk_runner_queue_runner FOREIGN KEY (runner_id) REFERENCES runners(id) ON DELETE CASCADE
 );
 
@@ -265,7 +264,7 @@ CREATE TABLE IF NOT EXISTS escalation_policy (
     timeout_ms integer NOT NULL,
     is_active boolean NOT NULL DEFAULT true,
     created_at timestamp NOT NULL DEFAULT now(),
-    updated_at timestamp NOT NULL DEFAULT now(),
+    updated_at timestamp NOT NULL DEFAULT now()
 );
 
 -- ======================================

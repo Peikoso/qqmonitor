@@ -41,7 +41,6 @@ class RunnerQueue(Base):
     runner_id = Column(UUID, ForeignKey('runners.id'))
     status = Column(String, default='PENDING')
     scheduled_for = Column(DateTime)
-    queued_at = Column(DateTime, server_default=func.now())
     started_at = Column(DateTime)
     finished_at = Column(DateTime)
     attempt_count = Column(Integer, default=0)

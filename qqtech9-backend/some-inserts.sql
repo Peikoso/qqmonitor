@@ -164,15 +164,15 @@ WHERE NOT EXISTS (SELECT 1 FROM runners WHERE rule_id = r.id);
 -- Tabela runner_queue
 -- Critério de unicidade: runner_id + scheduled_for
 -- ======================================
-INSERT INTO runner_queue (runner_id, status, scheduled_for, queued_at, started_at, finished_at, attempt_count)
-SELECT ru.id, d.status, d.scheduled_for::timestamp, d.queued_at::timestamp, d.started_at::timestamp, d.finished_at::timestamp, d.attempt_count
+INSERT INTO runner_queue (runner_id, status, scheduled_for, started_at, finished_at, attempt_count)
+SELECT ru.id, d.status, d.scheduled_for::timestamp, d.started_at::timestamp, d.finished_at::timestamp, d.attempt_count
 FROM (VALUES
-    ('Verificar Usuarios', 'COMPLETED', '2025-11-27 10:30:00', '2025-11-27 10:30:05', '2025-11-27 10:30:10', '2025-11-27 10:30:15', 1),
-    ('Verificar Incidentes', 'PENDING', '2025-11-27 11:45:00', '2025-11-27 11:45:03', NULL, NULL, 0),
-    ('Verificar Notificações', 'COMPLETED', '2025-11-27 09:15:00', '2025-11-27 09:15:02', '2025-11-27 09:15:05', '2025-11-27 09:15:12', 1),
-    ('Verificar Conexões BD', 'PENDING', '2025-11-27 12:00:00', '2025-11-27 11:59:55', NULL, NULL, 0),
-    ('Verificar Logs de Erro', 'FAILED', '2025-11-27 07:20:00', '2025-11-27 07:20:02', '2025-11-27 07:20:05', '2025-11-27 07:20:08', 3)
-) AS d(rule_name, status, scheduled_for, queued_at, started_at, finished_at, attempt_count)
+    ('Verificar Usuarios', 'COMPLETED', '2025-11-27 10:30:00', '2025-11-27 10:30:10', '2025-11-27 10:30:15', 1),
+    ('Verificar Incidentes', 'PENDING', '2025-11-27 11:45:00', NULL, NULL, 0),
+    ('Verificar Notificações', 'COMPLETED', '2025-11-27 09:15:00', '2025-11-27 09:15:05', '2025-11-27 09:15:12', 1),
+    ('Verificar Conexões BD', 'PENDING', '2025-11-27 12:00:00', '2025-11-27 11:59:55', NULL, 0),
+    ('Verificar Logs de Erro', 'FAILED', '2025-11-27 07:20:00', '2025-11-27 07:20:02', '2025-11-27 07:20:05', 3)
+) AS d(rule_name, status, scheduled_for, started_at, finished_at, attempt_count)
 JOIN rules r ON r.name = d.rule_name
 JOIN runners ru ON ru.rule_id = r.id
 WHERE NOT EXISTS (SELECT 1 FROM runner_queue WHERE runner_id = ru.id AND scheduled_for = d.scheduled_for::timestamp);
@@ -324,17 +324,12 @@ WHERE NOT EXISTS (SELECT 1 FROM sql_test_logs WHERE user_id = u.id AND sql = d.s
 -- Tabela escalation_policy
 -- Critério de unicidade: role_id
 -- ======================================
-INSERT INTO escalation_policy (timeout_ms, role_id, is_active)
-SELECT d.timeout_ms, r.id, d.is_active::boolean
+INSERT INTO escalation_policy (timeout_ms, is_active)
+SELECT d.timeout_ms, d.is_active::boolean
 FROM (VALUES
-    (300000, 'Analista', true),
-    (600000, 'Supervisor', true),
-    (900000, 'Operador', true),
-    (1200000, 'Administrador', true),
-    (180000, 'Gerente', false)
-) AS d(timeout_ms, role_name, is_active)
-JOIN roles r ON r.name = d.role_name
-WHERE NOT EXISTS (SELECT 1 FROM escalation_policy WHERE role_id = r.id);
+    (300000, true)
+) AS d(timeout_ms, is_active)
+WHERE NOT EXISTS (SELECT 1 FROM escalation_policy);
 
 -- ======================================
 -- Tabela app_settings

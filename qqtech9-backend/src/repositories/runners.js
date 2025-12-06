@@ -3,19 +3,19 @@ import { Runners, RunnerQueue, RunnerLogs } from '../models/runners.js';
 
 export const RunnersRepository = {
     findAllPaginatedWithFilters: async (
-        ruleName, status, priority, databaseType, limit, offset
+        ruleName, status, priority, databaseType, profile, roles, limit, offset
     ) => {
         const selectQuery = 
         `
         SELECT 
             r.*,
-            json_agg(
-                json_build_object(
-                    'id', rl.id,
-                    'name', rl.name,
-                    'database_type', rl.database_type,
-                    'priority', rl.priority
-                )
+            json_build_object(
+                'id', rl.id,
+                'name', rl.name,
+                'database_type', rl.database_type,
+                'priority', rl.priority,
+                'execution_interval_ms', rl.execution_interval_ms,
+                'is_active', rl.is_active
             ) AS rule
         FROM runners r
         LEFT JOIN rules rl 
@@ -25,9 +25,21 @@ export const RunnersRepository = {
             AND ($2::varchar IS NULL OR r.status = $2)
             AND ($3::varchar IS NULL OR rl.priority = $3)
             AND ($4::varchar IS NULL OR rl.database_type = $4)
-        GROUP BY r.id
-        ORDER BY updated_at DESC
-        LIMIT $5 OFFSET $6;
+            AND (
+                $5::varchar = 'admin'
+                OR (
+                    $6::uuid[] IS NOT NULL
+                    AND EXISTS (
+                        SELECT 1
+                        FROM rules_roles rr_auth
+                        WHERE rr_auth.rule_id = rl.id
+                        AND rr_auth.role_id = ANY($6::uuid[])
+                    )
+                )
+            )
+        GROUP BY r.id, rl.id
+        ORDER BY last_run_at DESC
+        LIMIT $7 OFFSET $8;
         `;
 
 
@@ -36,6 +48,8 @@ export const RunnersRepository = {
             status || null,
             priority || null,
             databaseType || null,
+            profile,
+            roles?.length ? roles : null,
             limit,
             offset,
         ];
@@ -43,26 +57,6 @@ export const RunnersRepository = {
         const result = await pool.query(selectQuery, values);
 
         return Runners.fromArray(result.rows);
-    },
-
-    findAllForScheduling: async () => {
-        const result = await pool.query(
-            `
-            SELECT r.*
-            FROM runners r
-            LEFT JOIN rules rl
-                ON r.rule_id = rl.id
-            ORDER BY 
-                CASE rl.priority
-                    WHEN 'HIGH' THEN 1
-                    WHEN 'MEDIUM' THEN 2
-                    WHEN 'LOW' THEN 3
-                    ELSE 4
-                END;
-            `
-        );
-
-        return Runners.fromArray(result.rows)
     },
 
     findById: async (id) => {
@@ -137,18 +131,17 @@ export const RunnersRepository = {
 
 export const RunnerQueueRepository = {
     findAll: async (
-        ruleName, status, rulePriority, limit, offset
+        ruleName, status, rulePriority, profile, roles, limit, offset
     ) => {
         const selectQuery =
         `
         SELECT 
             rq.*,
-            json_agg(
-                json_build_object(
-                    'id', rl.id,
-                    'name', rl.name,
-                    'priority', rl.priority
-                )
+            json_build_object(
+                'id', rl.id,
+                'name', rl.name,
+                'priority', rl.priority
+            
             ) AS rule
         FROM runner_queue rq
         LEFT JOIN runners r 
@@ -159,15 +152,29 @@ export const RunnerQueueRepository = {
             ($1::varchar IS NULL OR rl.name ILIKE '%' || $1 || '%')
             AND ($2::varchar IS NULL OR rq.status = $2)
             AND ($3::varchar IS NULL OR rl.priority = $3)
-        GROUP BY rq.id
-        ORDER BY queued_at DESC
-        LIMIT $4 OFFSET $5;
+            AND (
+                $4::varchar = 'admin'
+                OR (
+                    $5::uuid[] IS NOT NULL
+                    AND EXISTS (
+                        SELECT 1
+                        FROM rules_roles rr_auth
+                        WHERE rr_auth.rule_id = rl.id
+                        AND rr_auth.role_id = ANY($5::uuid[])
+                    )
+                )
+            )
+        GROUP BY rq.id, rl.id
+        ORDER BY scheduled_for DESC
+        LIMIT $6 OFFSET $7;
         `;
 
         const value = [
             ruleName || null,
             status || null,
             rulePriority || null,
+            profile,
+            roles?.length ? roles : null,
             limit,
             offset,
         ];
@@ -185,39 +192,6 @@ export const RunnerQueueRepository = {
         `;
 
         const result = await pool.query(selectIdQuery, [id]);
-
-        if(!result.rows[0]){
-            return null;
-        }
-
-        return new RunnerQueue(result.rows[0]);
-    },
-
-    findPendingJobs: async (limit) => {
-        const selectQuery = 
-        `
-        SELECT * FROM runner_queue
-        WHERE status = 'PENDING'
-        AND scheduled_for <= NOW()
-        ORDER BY scheduled_for ASC
-        LIMIT $1;
-        `;
-
-        const result = await pool.query(selectQuery, [limit]);
-
-        return RunnerQueue.fromArray(result.rows);
-    },
-
-    findPendingByRunnerId: async (runnerId) => {
-        const selectQuery = 
-        `
-        SELECT * FROM runner_queue
-        WHERE runner_id = $1
-        AND status in ('PENDING', 'PROCESSING')
-        LIMIT 1;
-        `;
-
-        const result = await pool.query(selectQuery, [runnerId]);
 
         if(!result.rows[0]){
             return null;
@@ -251,18 +225,16 @@ export const RunnerQueueRepository = {
         UPDATE runner_queue
         SET status = $1,
             scheduled_for = $2,
-            queued_at = $3,
-            started_at = $4,
-            finished_at = $5,
-            attempt_count = $6
-        WHERE id = $7
+            started_at = $3,
+            finished_at = $4,
+            attempt_count = $5
+        WHERE id = $6
         RETURNING *;
         `;
 
         const values = [
             runnerQueue.status,
             runnerQueue.scheduledFor,
-            runnerQueue.queuedAt,
             runnerQueue.startedAt,
             runnerQueue.finishedAt,
             runnerQueue.attemptCount,

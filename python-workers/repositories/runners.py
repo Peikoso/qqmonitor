@@ -140,7 +140,6 @@ class RunnerQueueRepository:
         UPDATE runner_queue
         SET status = :status,
             scheduled_for = :scheduled_for,
-            queued_at = :queued_at,
             started_at = :started_at,
             finished_at = :finished_at,
             attempt_count = :attempt_count
@@ -152,7 +151,6 @@ class RunnerQueueRepository:
         query = query.bindparams(
             status=runner_queue.status,
             scheduled_for=runner_queue.scheduled_for,
-            queued_at=runner_queue.queued_at,
             started_at=runner_queue.started_at,
             finished_at=runner_queue.finished_at,
             attempt_count=runner_queue.attempt_count,
