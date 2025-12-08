@@ -26,7 +26,7 @@ export const NotificationsRepository = {
             SELECT DISTINCT ON (incident_id) *
             FROM notifications
             WHERE user_id = $1
-            AND status = 'SENT'
+            AND (status = 'SENT' OR status = 'FAILED')
             ORDER BY incident_id, sent_at DESC
         ) t
         ORDER BY sent_at DESC;

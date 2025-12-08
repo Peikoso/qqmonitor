@@ -1,6 +1,6 @@
 import { Channels } from "../models/channels.js";
 import { ChannelsRepository } from "../repositories/channels.js";
-import { ForbiddenError, NotFoundError } from "../utils/errors.js";
+import { NotFoundError } from "../utils/errors.js";
 import { isValidUuid } from "../utils/validations.js";
 
 export const ChannelService = {

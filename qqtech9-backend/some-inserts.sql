@@ -73,7 +73,7 @@ AND NOT EXISTS (SELECT 1 FROM user_preferences WHERE user_id = users.id);
 INSERT INTO channels (type, name, config, is_active)
 SELECT d.type, d.name, d.config::jsonb, d.is_active::boolean
 FROM (VALUES
-    ('EMAIL', 'Email Corporativo', '{"smtp_server": "smtp.qqtech.com", "port": 587}', true),
+    ('EMAIL', 'Email Corporativo', '{"service": "gmail", "user": "corp@example.com", "password": "xxxxx"}', true),
     ('COMUNIQ', 'ComunIQ', '{"api_key": "abcd1234efgh5678", "channel_id": "support-alerts"}', true),
     ('PUSH', 'Notificação Push', '{"firebase_topic": "incidents"}', true),
     ('PUSH SOUND', 'Push Sound', '{"webhook_url": "https://hooks.slack.com/services/xxx"}', true)

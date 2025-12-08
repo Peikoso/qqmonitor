@@ -4,9 +4,8 @@ import { NotFoundError, ValidationError  } from "../utils/errors.js";
 import { isValidUuid } from "../utils/validations.js";
 import { UserService } from "./users.js";
 import { UserPreferenceService } from "./user-preferences.js";
-import { ScheduleService } from "./schedules.js";
 import { IncidentService } from "./incidents.js";
-
+import { notificationDispatcher } from "./notification-dispatcher.js";
 
 
 export const NotificationService = {
@@ -38,11 +37,11 @@ export const NotificationService = {
         let userPreferences;
         
         try{
-            userPreferences = await UserPreferenceService.getUserPreferencesByUserId(incident.assignedUserId);
-
             if(!incident.assignedUserId){
                 throw new NotFoundError('No user assigned to the incident.');
             }
+            
+            userPreferences = await UserPreferenceService.getUserPreferencesByUserId(incident.assignedUserId);
 
             if(userPreferences.channels.length === 0){
                 throw new NotFoundError('No notification channels configured for the user.');
@@ -71,6 +70,8 @@ export const NotificationService = {
             try{
                 notification.status = 'SENT';
                 notification.error = null;
+
+                await notificationDispatcher.dispatchNotification(notification);
 
                 await NotificationsRepository.create(notification);
             } catch(error){
