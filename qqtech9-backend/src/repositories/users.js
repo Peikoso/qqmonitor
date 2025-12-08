@@ -133,6 +133,27 @@ export const UsersRepository = {
         return Users.fromArray(result.rows);
     },
 
+    findEligibleUsersForEscalation: async (rolesId) => {
+        const selectQuery = 
+        `
+        SELECT
+            u.id, u.name, u.email
+        FROM users u
+        LEFT JOIN users_roles ur 
+            ON u.id = ur.user_id
+        LEFT JOIN roles r
+            ON ur.role_id = r.id
+        WHERE
+            u.pending = false
+            AND u.profile != 'viewer'
+            AND ur.role_id = ANY($1::uuid[])
+        `
+
+        const result = await pool.query(selectQuery, [rolesId]);
+
+        return Users.fromArray(result.rows);
+    },
+
     create: async(user) =>{
         const client =  await pool.connect();
         

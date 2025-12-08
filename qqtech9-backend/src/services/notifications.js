@@ -6,7 +6,7 @@ import { UserService } from "./users.js";
 import { UserPreferenceService } from "./user-preferences.js";
 import { IncidentService } from "./incidents.js";
 import { notificationDispatcher } from "./notification-dispatcher.js";
-
+import { isWithinTimeRange } from '../utils/time-utils.js'
 
 export const NotificationService = {
     getNotificationById: async (id) => {
@@ -45,6 +45,24 @@ export const NotificationService = {
 
             if(userPreferences.channels.length === 0){
                 throw new NotFoundError('No notification channels configured for the user.');
+            }
+
+            if(userPreferences.dndStartTime && userPreferences.dndEndTime){
+                const nowLocal = new Date().toLocaleString('sv-SE').split(' ')[1];
+
+                if(isWithinTimeRange(nowLocal, userPreferences.dndStartTime, userPreferences.dndEndTime)){
+                    const notification = new Notifications(notificationData);
+                    notification.userId = incident.assignedUserId;
+                    notification.sentAt = new Date();
+                    notification.channelId = null;
+                    notification.status = 'SILENCED';
+                    notification.error = null;
+
+                    await NotificationsRepository.create(notification);
+
+                    return;
+                }
+                
             }
 
         } catch(error){

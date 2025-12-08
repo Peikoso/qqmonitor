@@ -163,6 +163,8 @@ export const UserPreferencesRepository = {
             `
             const userPreferencesWithChannels = await client.query(selectUserPreferencesWithChannelsQuery, [updatedUserPreferencesDb.rows[0].id]);
 
+            await client.query('COMMIT');
+
             return new UserPreferences(userPreferencesWithChannels.rows[0]);
         } catch(error){
             await client.query('ROLLBACK');

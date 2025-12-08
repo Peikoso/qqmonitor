@@ -58,13 +58,7 @@ export const SchedulesRepository = {
         JOIN users u 
             ON s.user_id = u.id
         WHERE 
-            $1::uuid[] IS NOT NULL
-            AND EXISTS (
-                SELECT 1
-                FROM users_roles ur
-                WHERE ur.user_id = u.id
-                AND ur.role_id = ANY($1::uuid[])
-            )
+            ur.role_id = ANY($1::uuid[])
             AND $2 BETWEEN s.start_time AND s.end_time
         ORDER BY s.start_time ASC, s.created_at ASC
         LIMIT 1;

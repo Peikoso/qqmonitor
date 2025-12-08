@@ -48,7 +48,7 @@ CREATE TABLE IF NOT EXISTS user_preferences (
 -- ======================================
 CREATE TABLE IF NOT EXISTS channels (
     id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
-    type varchar(30) NOT NULL,       
+    type varchar(30) NOT NULL,  
     name varchar(60) NOT NULL,
     config jsonb,                      
     is_active boolean NOT NULL DEFAULT true,
@@ -235,7 +235,7 @@ CREATE TABLE IF NOT EXISTS notifications (
     title varchar(150) NOT NULL,
     message text NOT NULL,
     sent_at timestamp,
-    status varchar(20), -- SENT, READED, FAILED
+    status varchar(20), -- SENT, READED, FAILED, SILENCED
     read_at timestamp,
     error text, 
     created_at timestamp NOT NULL DEFAULT now(),

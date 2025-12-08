@@ -38,6 +38,12 @@ export const UserService = {
         return users;
     },
 
+    getUsersForManualEscalation: async (rolesId) => {
+        const users = await UsersRepository.findEligibleUsersForEscalation(rolesId);
+
+        return users;
+    },
+
     getSelf: async (currentUserFirebaseUid) => {
         const user = await UsersRepository.findByFirebaseId(currentUserFirebaseUid);
 

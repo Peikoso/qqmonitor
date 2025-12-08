@@ -57,6 +57,17 @@ export const IncidentService = {
         return incident;
     },
 
+    getEligibleUsersForIncident: async (incidentId, currentUserFirebaseUid) => {
+        const user = await UserService.getSelf(currentUserFirebaseUid);
+        const incident = await IncidentService.getIncidentById(incidentId);
+        
+        await AuthService.requireOperatorAndRole(user, incident.roles);
+
+        const users = await UserService.getUsersForManualEscalation(incident.roles);
+
+        return users;
+    },
+
     createIncident: async (dto) => {
         const newIncident = new Incidents(dto);
         const rule = await RuleService.getRuleById(newIncident.ruleId);
@@ -79,7 +90,40 @@ export const IncidentService = {
         });
 
         return savedIncident;
-    }, 
+    },
+    
+    updateIncident: async (id, dto, currentUserFirebaseUid, client) => {
+        const user = await UserService.getSelf(currentUserFirebaseUid);
+        const incident = await IncidentService.getIncidentById(id);
+
+        await AuthService.requireOperatorAndRole(user, incident.roles);
+
+        const oldIncident = JSON.parse(JSON.stringify(incident));
+
+        const toUpdateIncident = new Incidents({
+            ...incident,
+            ...dto,
+            updatedAt: new Date(),
+        });
+        
+        await UserService.getUserById(toUpdateIncident.assignedUserId);
+
+        await IncidentsRepository.update(toUpdateIncident, client);
+        const updatedIncident = await IncidentsRepository.findById(incident.id, client);
+
+        const auditLog = {
+            entityId: incident.id,
+            entityType: 'incidents',
+            actionType: 'UPDATE',
+            oldValue: oldIncident,
+            newValue: updatedIncident,
+            userId: user.id
+        }
+
+        await AuditLogService.createAuditLog(auditLog, client);
+
+        return updatedIncident;
+    },
 };
 
 export const IncidentLogService = {
@@ -97,8 +141,6 @@ export const IncidentLogService = {
         const user = await UserService.getSelf(currentUserFirebaseUid);
         const incident = await IncidentService.getIncidentById(incidentId);
 
-        await AuthService.requireOperatorAndRole(user, incident.roles);
-
         const client = await pool.connect();
         
         try {
@@ -111,23 +153,9 @@ export const IncidentLogService = {
             newIncidentsLogs.nextStatus(incident.status);
             
             const savedIncidentsLogs = await IncidentsLogsRepository.create(newIncidentsLogs, client);
-
-            const oldIncident = JSON.parse(JSON.stringify(incident));
             
             incident.updateStatus(savedIncidentsLogs);
-            await IncidentsRepository.update(incident, client);
-            const updatedIncident = await IncidentsRepository.findById(incident.id, client);
-
-            const auditLog = {
-                entityId: incident.id,
-                entityType: 'incidents',
-                actionType: 'UPDATE',
-                oldValue: oldIncident,
-                newValue: updatedIncident,
-                userId: user.id
-            }
-
-            await AuditLogService.createAuditLog(auditLog, client);
+            await IncidentService.updateIncident(incident.id, incident, currentUserFirebaseUid, client);
 
             await client.query('COMMIT');
 

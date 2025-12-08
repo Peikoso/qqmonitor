@@ -23,7 +23,7 @@ export const ScheduleService = {
     },
 
     getCurrentScheduleByRolesId: async (roles) => {
-        const nowLocal = new Date().toLocaleString('sv-SE').replace('T', ' ');
+        const nowLocal = new Date().toLocaleString('sv-SE');
 
         const schedule = await SchedulesRepository.findCurrentScheduleByRolesId(roles, nowLocal);
 

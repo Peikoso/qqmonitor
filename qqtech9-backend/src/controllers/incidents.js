@@ -1,6 +1,7 @@
 import { IncidentService, IncidentLogService } from '../services/incidents.js';
 import { CreateIncidentsDto, CreateIncidentsLogsDto } from '../dto/incidents/create-incidents-dto.js';
 import { ResponseIncidentsDto, ResponseIncidentsLogsDto } from '../dto/incidents/response-incidents-dto.js';
+import { UpdateIncidentForManualEscalationDto } from '../dto/incidents/update-incidents-dto.js';
 
 export const IncidentsController = {
     getAllIncidents: async(req, res) => {
@@ -33,6 +34,14 @@ export const IncidentsController = {
         return res.status(200).json(response);
     },
 
+    getEligibleUsersForIncident: async(req, res) => {
+        const currentUserFirebaseUid = req.user.uid;
+        const incidentId = req.params.id;
+        const users = await IncidentService.getEligibleUsersForIncident(incidentId, currentUserFirebaseUid);
+
+        return res.status(200).json(users);
+    },
+
     createIncident: async(req, res) => {
         const incidentData = req.body;
 
@@ -45,6 +54,19 @@ export const IncidentsController = {
         return res.status(201).json(response);
     },
 
+    updateIncidentForManualEscalation: async(req, res) => {
+        const currentUserFirebaseUid = req.user.uid;
+        const id = req.params.id;
+        const incidentData = req.body;
+
+        const dto = new UpdateIncidentForManualEscalationDto(incidentData).validate();
+
+        const updatedIncident = await IncidentService.updateIncident(id, dto, currentUserFirebaseUid);
+
+        const response = new ResponseIncidentsDto(updatedIncident);
+
+        return res.status(200).json(response);
+    },
     
 };
 

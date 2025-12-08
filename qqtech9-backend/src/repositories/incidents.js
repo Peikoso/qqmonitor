@@ -137,7 +137,7 @@ export const IncidentsRepository = {
 
     },
 
-    update: async(incident, client) => {
+    update: async(incident, client = pool) => {
         const updateIncidentQuery =
         `
         UPDATE incidents
