@@ -30,7 +30,7 @@ export const SchedulesRepository = {
         LEFT JOIN roles r
             ON ur.role_id = r.id
         WHERE 
-            $1 BETWEEN DATE(s.start_time) AND DATE(s.end_time)
+            ($1 BETWEEN DATE(s.start_time) AND DATE(s.end_time) OR s.start_time > $1)
             AND ($2::varchar IS NULL OR u.name ILIKE '%' || $2 || '%')
             AND ($3::uuid IS NULL OR r.id = $3::uuid)
         GROUP BY s.id, u.id 
