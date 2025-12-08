@@ -4,7 +4,12 @@ import { CreateSchedulesDto } from '../dto/schedules/create-schedules-dto.js';
 
 export const SchedulesController = {
     getUpcomingSchedules: async(req, res) => {
-        const schedules = await ScheduleService.getUpcomingSchedules();
+        const currentUserFirebaseUid = req.user.uid;
+        const { userName, roleId, page, perPage } = req.query;
+
+        const schedules = await ScheduleService.getUpcomingSchedules(
+            currentUserFirebaseUid, userName, roleId, page, perPage
+        );
 
         const response = ResponseSchedulesDto.fromArray(schedules);
 
@@ -13,6 +18,7 @@ export const SchedulesController = {
     },
 
     getScheduleById: async(req, res) => {
+        const currentUserFirebaseUid = req.user.uid;
         const id = req.params.id;
 
         const schedule = await ScheduleService.getScheduleById(id);
@@ -24,6 +30,7 @@ export const SchedulesController = {
     },
 
     createSchedule: async(req, res) => {
+        const currentUserFirebaseUid = req.user.uid;
         const scheduleData = req.body;
 
         const dto = new CreateSchedulesDto(scheduleData).validate();
@@ -36,6 +43,7 @@ export const SchedulesController = {
     },
 
     updateSchedule: async(req, res) => {
+        const currentUserFirebaseUid = req.user.uid;
         const id = req.params.id;
         const scheduleData = req.body;
 
@@ -49,6 +57,7 @@ export const SchedulesController = {
     },
 
     deleteSchedule: async(req, res) => {
+        const currentUserFirebaseUid = req.user.uid;
         const id = req.params.id;
 
         await ScheduleService.deleteSchedule(id);

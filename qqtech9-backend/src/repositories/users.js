@@ -102,6 +102,37 @@ export const UsersRepository = {
         return new Users(result.rows[0]);
     },
 
+    findAllwithBasicInfo: async (name) => {
+        const selectQuery = 
+        `
+        SELECT 
+            u.id, u.name, u.matricula, u.email, u.profile,
+            COALESCE(
+                    jsonb_agg(
+                        jsonb_build_object(
+                            'id', r.id,
+                            'name', r.name,
+                            'color', r.color
+                        )
+                    ) FILTER (WHERE r.id IS NOT NULL),
+                    '[]'::jsonb
+                ) AS roles 
+        FROM users u
+        LEFT JOIN users_roles ur
+            ON u.id = ur.user_id
+        LEFT JOIN roles r
+            ON ur.role_id = r.id
+        WHERE
+            u.pending = false 
+            AND ($1::varchar IS NULL OR u.name ILIKE '%' || $1 || '%')
+        GROUP BY u.id;
+        `;
+
+        const result = await pool.query(selectQuery, [name || null]);
+
+        return Users.fromArray(result.rows);
+    },
+
     create: async(user) =>{
         const client =  await pool.connect();
         

@@ -2,15 +2,51 @@ import { pool } from '../config/database-conn.js';
 import { Schedules } from '../models/schedules.js';
 
 export const SchedulesRepository = {
-    findUpcomingSchedules: async (date) => {
+    findUpcomingSchedules: async (date, userName, roleId, limit, offset) => {
         const selectQuery = 
         `
-        SELECT * FROM schedules
-        WHERE DATE(start_time) >= $1 
-        ORDER BY start_time DESC
+        SELECT 
+            s.*,
+            jsonb_build_object(
+                'id', u.id,
+                'email', u.email,
+                'name', u.name,
+                'profile', u.profile,
+                'roles', COALESCE(
+                    jsonb_agg(
+                        jsonb_build_object(
+                            'id', r.id,
+                            'name', r.name,
+                            'color', r.color
+                        )
+                    ) FILTER (WHERE r.id IS NOT NULL), '[]'::jsonb
+                )
+            ) AS user
+        FROM schedules s
+        JOIN users u
+            ON s.user_id = u.id
+        LEFT JOIN users_roles ur
+            ON u.id = ur.user_id
+        LEFT JOIN roles r
+            ON ur.role_id = r.id
+        WHERE 
+            $1 BETWEEN DATE(s.start_time) AND DATE(s.end_time)
+            AND ($2::varchar IS NULL OR u.name ILIKE '%' || $2 || '%')
+            AND ($3::uuid IS NULL OR r.id = $3::uuid)
+        GROUP BY s.id, u.id 
+        ORDER BY start_time ASC, end_time ASC
+        LIMIT $4 OFFSET $5;
         `;
 
-        const result = await pool.query(selectQuery, [date]);
+        const values = [
+            date,
+            userName || null,
+            roleId || null,
+            limit,
+            offset
+        ];
+
+        const result = await pool.query(selectQuery, values);
         
         return Schedules.fromArray(result.rows);
     },

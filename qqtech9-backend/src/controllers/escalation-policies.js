@@ -3,20 +3,23 @@ import { CreateEscalationPolicy } from "../dto/escalation_policies/create-escala
 import { ResponseEscalationPolicy } from "../dto/escalation_policies/response-escalation-policies-dto.js";
 
 export const EscalationPoliciesController = {
-    getAllEscalationPolicies: async (req, res) => {
-        const escalationPolicies = await EscalationPolicyService.getAllEscalationPolicies();
+    getEscalationPolicy: async (req, res) => {
+        const currentUserFirebaseUid = req.user.uid;
 
-        const response = ResponseEscalationPolicy.fromArray(escalationPolicies);
+        const escalationPolicy= await EscalationPolicyService.getEscalationPolicy();
+
+        const response = new ResponseEscalationPolicy(escalationPolicy);
 
         return res.status(200).json(response);
     },
 
     createEscalationPolicy: async (req, res) => {
+        const currentUserFirebaseUid = req.user.uid;
         const escalationPolicyData = req.body;
 
         const dto = new CreateEscalationPolicy(escalationPolicyData).validate();
 
-        const newEscalationPolicy = await EscalationPolicyService.createEscalationPolicy(dto);
+        const newEscalationPolicy = await EscalationPolicyService.createEscalationPolicy(dto, currentUserFirebaseUid);
 
         const response = new ResponseEscalationPolicy(newEscalationPolicy);
 
@@ -24,12 +27,12 @@ export const EscalationPoliciesController = {
     },
 
     updateEscalationPolicy: async (req, res) => {
-        const id = req.params.id;
+        const currentUserFirebaseUid = req.user.uid;
         const escalationPolicyData = req.body;
 
         const dto = new CreateEscalationPolicy(escalationPolicyData).validate();
 
-        const updatedEscalationPolicy = await EscalationPolicyService.updateEscalationPolicy(id, dto);
+        const updatedEscalationPolicy = await EscalationPolicyService.updateEscalationPolicy(dto, currentUserFirebaseUid);
 
         const response = new ResponseEscalationPolicy(updatedEscalationPolicy);
 
@@ -37,6 +40,7 @@ export const EscalationPoliciesController = {
     },
 
     deleteEscalationPolicy: async (req, res) => {
+        const currentUserFirebaseUid = req.user.uid;
         const id = req.params.id;
 
         await EscalationPolicyService.deleteEscalationPolicy(id);

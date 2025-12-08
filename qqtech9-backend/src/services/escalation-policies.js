@@ -1,23 +1,12 @@
 import { EscalationPolicy } from "../models/escalation-policies.js";
 import { EscalationPoliciesRepository } from "../repositories/escalation-policies.js";
-import { RoleService } from "./roles.js";
-import { ForbiddenError, NotFoundError, ValidationError } from "../utils/errors.js";
-import { isValidUuid } from "../utils/validations.js";
+import { NotFoundError } from "../utils/errors.js";
+import { AuthService } from "./auth.js";
 
 
 export const EscalationPolicyService = {
-    getAllEscalationPolicies: async () => {
-        const escalationPolicies = await EscalationPoliciesRepository.findAll();
-
-        return escalationPolicies;
-    },
-
-    getEscalationPolicyById: async (id) => {
-        if(!isValidUuid(id)) {
-            throw new ValidationError('Invalid UUID format for id.');
-        }
-
-        const escalationPolicy = await EscalationPoliciesRepository.findById(id);
+    getEscalationPolicy: async () => {
+        const escalationPolicy = await EscalationPoliciesRepository.find();
 
         if (!escalationPolicy) {
             throw new NotFoundError(`Escalation Policy not found.`);
@@ -26,18 +15,20 @@ export const EscalationPolicyService = {
         return escalationPolicy;
     },
 
-    createEscalationPolicy: async (dto) => {
-        const newEscalationPolicy = new EscalationPolicy(dto).validateBusinessLogic();
+    createEscalationPolicy: async (dto, currentUserFirebaseUid) => {
+        await AuthService.requireAdmin(currentUserFirebaseUid);
 
-        await RoleService.getRoleById(newEscalationPolicy.roleId);
+        const newEscalationPolicy = new EscalationPolicy(dto).validateBusinessLogic();
 
         const savedEscalationPolicy = await EscalationPoliciesRepository.create(newEscalationPolicy);
 
         return savedEscalationPolicy;
     },
 
-    updateEscalationPolicy: async (id, dto) => {
-        const existingEscalationPolicy = await EscalationPolicyService.getEscalationPolicyById(id);
+    updateEscalationPolicy: async (dto, currentUserFirebaseUid) => {
+        await AuthService.requireAdmin(currentUserFirebaseUid);
+
+        const existingEscalationPolicy = await EscalationPolicyService.getEscalationPolicy();
 
         const updatedEscalationPolicy = new EscalationPolicy({
             ...existingEscalationPolicy,
@@ -45,14 +36,14 @@ export const EscalationPolicyService = {
             updatedAt: new Date(),
         }).validateBusinessLogic();
 
-        await RoleService.getRoleById(updatedEscalationPolicy.roleId);
-
         const savedEscalationPolicy = await EscalationPoliciesRepository.update(updatedEscalationPolicy);
 
         return savedEscalationPolicy;
     },
 
-    deleteEscalationPolicy: async (id) => {
+    deleteEscalationPolicy: async (id, currentUserFirebaseUid) => {
+        await AuthService.requireAdmin(currentUserFirebaseUid);
+
         await EscalationPolicyService.getEscalationPolicyById(id);
 
         await EscalationPoliciesRepository.delete(id);

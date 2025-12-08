@@ -17,13 +17,30 @@ export class ResponseUsersDto {
     }
 }
 
+
 export class ResponseUsersBasicDto {
+    constructor(user){
+        this.id = user.id;
+        this.name = user.name;
+        this.matricula = user.matricula;
+        this.email = user.email;
+        this.profile = user.profile;
+        this.roles = user.roles;
+    }
+    
+    static fromArray(usersArray) {
+        return usersArray.map((user) => new ResponseUsersBasicDto(user));
+    }
+}
+
+
+export class ResponseUsersOnlyIdNameDto {
     constructor(user){
         this.id = user.id;
         this.name = user.name;
     }
     
     static fromArray(usersArray) {
-        return usersArray.map((user) => new ResponseUsersBasicDto(user));
+        return usersArray.map((user) => new ResponseUsersOnlyIdNameDto(user));
     }
 }

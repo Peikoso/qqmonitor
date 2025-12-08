@@ -119,15 +119,16 @@ export const IncidentsRepository = {
         const insertIncidentQuery =
         `
         INSERT INTO incidents
-        (rule_id, status, priority)
-        VALUES ($1, $2, $3)
+        (rule_id, status, priority, assigned_user_id)
+        VALUES ($1, $2, $3, $4)
         RETURNING *;
         `
 
         const values = [
             incident.ruleId,
             incident.status,
-            incident.priority
+            incident.priority,
+            incident.assignedUserId
         ]
 
         const result = await pool.query(insertIncidentQuery, values);

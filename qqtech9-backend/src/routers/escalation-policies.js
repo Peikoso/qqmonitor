@@ -3,9 +3,9 @@ import { EscalationPoliciesController } from '../controllers/escalation-policies
 
 const router = express.Router();
 
-router.get('/', EscalationPoliciesController.getAllEscalationPolicies);
+router.get('/', EscalationPoliciesController.getEscalationPolicy);
 router.post('/', EscalationPoliciesController.createEscalationPolicy);
-router.put('/:id', EscalationPoliciesController.updateEscalationPolicy);
-router.delete('/:id', EscalationPoliciesController.deleteEscalationPolicy);
+router.patch('/', EscalationPoliciesController.updateEscalationPolicy);
+//router.delete('/:id', EscalationPoliciesController.deleteEscalationPolicy);
 
 export default router;

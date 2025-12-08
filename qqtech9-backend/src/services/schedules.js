@@ -3,12 +3,23 @@ import { Schedules } from "../models/schedules.js";
 import { NotFoundError, ValidationError } from "../utils/errors.js";
 import { isValidUuid } from "../utils/validations.js";
 import { UserService } from "./users.js";
+import { AuthService } from "./auth.js";
 
 export const ScheduleService = {
-    getUpcomingSchedules: async () => {
+    getUpcomingSchedules: async (currentUserFirebaseUid, userName, roleId, page, perPage) => {
+        await AuthService.requireAdmin(currentUserFirebaseUid);
+
+        const pageNumber = parseInt(page) > 0 ? parseInt(page) : 1;
+        const limit = parseInt(perPage) > 0 ? parseInt(perPage) : 10;
+        const offset = (pageNumber - 1) * limit;
+
         const date = new Date().toISOString().split('T')[0];
+
+        const schedules = await SchedulesRepository.findUpcomingSchedules(
+            date, userName, roleId, limit, offset
+        );
         
-        return await SchedulesRepository.findUpcomingSchedules(date);
+        return schedules;
     },
 
     getCurrentScheduleByRolesId: async (roles) => {
@@ -38,7 +49,7 @@ export const ScheduleService = {
     },
 
     createSchedule: async (dto) => {
-        const newSchedule = new Schedules(dto).validateBusinessLogic();
+        const newSchedule = new Schedules(dto);
 
         await UserService.getUserById(newSchedule.userId);
 
@@ -54,7 +65,7 @@ export const ScheduleService = {
             ...existingSchedule,
             ...dto,
             updatedAt: new Date()
-        }).validateBusinessLogic();
+        });
 
         const savedSchedule = await SchedulesRepository.update(updatedSchedule);
 

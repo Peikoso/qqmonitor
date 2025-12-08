@@ -3,10 +3,11 @@ import { IncidentsRepository, IncidentsLogsRepository } from "../repositories/in
 import { Incidents, IncidentsLogs } from '../models/incidents.js';
 import { isValidUuid } from "../utils/validations.js";
 import { ValidationError, NotFoundError } from "../utils/errors.js";
-import { UserService } from "./users.js";
-import { NotificationService } from "./notifications.js";
-import { RuleService } from "./rules.js";
 import { AuthService } from "./auth.js";
+import { UserService } from "./users.js";
+import { RuleService } from "./rules.js";
+import { ScheduleService } from "./schedules.js";
+import { NotificationService } from "./notifications.js";
 import { AuditLogService } from "./audit-logs.js";
 
 
@@ -58,10 +59,18 @@ export const IncidentService = {
 
     createIncident: async (dto) => {
         const newIncident = new Incidents(dto);
+        const rule = await RuleService.getRuleById(newIncident.ruleId);
+        let scheduledUser;
+
+        try{
+            scheduledUser = await ScheduleService.getCurrentScheduleByRolesId(rule.roles);
+            
+            newIncident.assignedUserId = scheduledUser.userId;
+        } catch(error){
+            newIncident.assignedUserId = null;
+        }
 
         const savedIncident = await IncidentsRepository.create(newIncident);
-
-        const rule = await RuleService.getRuleById(savedIncident.ruleId);
 
         await NotificationService.createNotification({
             incidentId: savedIncident.id,

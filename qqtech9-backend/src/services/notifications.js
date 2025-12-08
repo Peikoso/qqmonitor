@@ -35,12 +35,14 @@ export const NotificationService = {
 
     createNotification: async (notificationData) => {
         const incident = await IncidentService.getIncidentById(notificationData.incidentId);
-        let scheduledUser;
         let userPreferences;
         
         try{
-            scheduledUser = await ScheduleService.getCurrentScheduleByRolesId(incident.roles);
-            userPreferences = await UserPreferenceService.getUserPreferencesByUserId(scheduledUser.userId);
+            userPreferences = await UserPreferenceService.getUserPreferencesByUserId(incident.assignedUserId);
+
+            if(!incident.assignedUserId){
+                throw new NotFoundError('No user assigned to the incident.');
+            }
 
             if(userPreferences.channels.length === 0){
                 throw new NotFoundError('No notification channels configured for the user.');
@@ -51,7 +53,7 @@ export const NotificationService = {
             notification.sentAt = new Date();
             notification.status = "FAILED";
             notification.error = error.message;
-            notification.userId = scheduledUser?.userId ?? null; 
+            notification.userId = incident.assignedUserId ?? null; 
             notification.channelId = null;   
 
             await NotificationsRepository.create(notification);
@@ -62,7 +64,7 @@ export const NotificationService = {
 
         for (const channelId of userPreferences.channels) {
             const notification = new Notifications(notificationData);
-            notification.userId = scheduledUser.userId;
+            notification.userId = incident.assignedUserId;
             notification.sentAt = new Date();
             notification.channelId = channelId;
 

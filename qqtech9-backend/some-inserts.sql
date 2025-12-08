@@ -5,7 +5,7 @@
 INSERT INTO roles (name, color, description)
 SELECT d.name, d.color, d.description
 FROM (VALUES
-    ('Administrador', '#FF5733', 'Responsável pela administração geral do sistema'),
+    ('DBA', '#FF5733', 'Responsável pelo banco de dados'),
     ('Supervisor', '#33C4FF', 'Supervisiona equipes e processos críticos'),
     ('Operador', '#4CAF50', 'Operador de sistemas e monitoramento'),
     ('Analista', '#FFC107', 'Analista de suporte técnico'),
@@ -35,7 +35,7 @@ WHERE NOT EXISTS (SELECT 1 FROM users WHERE email = d.email);
 INSERT INTO users_roles (user_id, role_id)
 SELECT u.id, r.id 
 FROM users u, roles r 
-WHERE u.email='joao@example.com' AND r.name='Administrador'
+WHERE u.email='joao@example.com' AND r.name='DBA'
 AND NOT EXISTS (SELECT 1 FROM users_roles WHERE user_id = u.id AND role_id = r.id);
 
 INSERT INTO users_roles (user_id, role_id)
@@ -250,11 +250,11 @@ AND NOT EXISTS (SELECT 1 FROM incidents_events WHERE incident_id = inc.id AND cu
 INSERT INTO schedules (user_id, start_time, end_time)
 SELECT u.id, d.start_time::timestamp, d.end_time::timestamp
 FROM (VALUES
-    ('joao@example.com', '2025-11-27 08:00:00', '2025-11-27 16:00:00'),
-    ('rogerio@example.com', '2025-11-27 16:00:00', '2025-11-28 00:00:00'),
-    ('penkas@example.com', '2025-11-28 00:00:00', '2025-11-28 08:00:00'),
-    ('rogerio@example.com', '2025-11-28 08:00:00', '2025-11-28 16:00:00'),
-    ('joao@example.com', '2025-11-28 16:00:00', '2025-11-29 00:00:00')
+    ('joao@example.com', '2025-12-08 08:00:00', '2025-12-08 16:00:00'),
+    ('rogerio@example.com', '2025-12-08 16:00:00', '2025-12-09 00:00:00'),
+    ('penkas@example.com', '2025-12-08 00:00:00', '2025-12-09 00:00:00'),
+    ('rogerio@example.com', '2025-12-08 08:00:00', '2025-12-08 16:00:00'),
+    ('joao@example.com', '2025-12-09 16:00:00', '2025-12-10 00:00:00')
 ) AS d(email, start_time, end_time)
 JOIN users u ON u.email = d.email
 WHERE NOT EXISTS (SELECT 1 FROM schedules WHERE user_id = u.id AND start_time = d.start_time::timestamp);
@@ -271,9 +271,9 @@ SELECT
 FROM (VALUES
     ('Verificar Usuarios', 'EMAIL', 'joao@example.com', 'Error ao verificar usuarios', 'Timeout da query de 5 minutos', '2025-11-27 10:30:20', 'READED', '2025-11-27 10:32:00'),
     ('Verificar Incidentes', 'COMUNIQ', 'penkas@example.com', 'CRÍTICO: Incidentes fora de controle', 'Incidentes críticos detectados', '2025-11-27 11:45:15', 'READED', '2025-11-27 11:46:00'),
-    ('Verificar Notificações', 'PUSH', 'penkas@example.com', 'Error ao enviar Notificações', 'Verificar error', '2025-11-27 12:00:00', 'SENT', NULL),
+    ('Verificar Notificações', 'PUSH', 'admin@example.com', 'Error ao enviar Notificações', 'Verificar error', '2025-11-27 12:00:00', 'SENT', NULL),
     ('Verificar Usuarios', 'PUSH SOUND', 'rogerio@example.com', 'Usuarios Execidos', 'Verificar por que tantos usuarios', '2025-11-26 15:35:00', 'READED', '2025-11-26 15:40:00'),
-    ('Verificar Incidentes', 'EMAIL', 'penkas@example.com', 'Incidente Crítico', 'Incidente crítico detectado', '2025-11-27 08:16:00', 'SENT', NULL)
+    ('Verificar Incidentes', 'EMAIL', 'admin@example.com', 'Incidente Crítico', 'Incidente crítico detectado', '2025-11-27 08:16:00', 'SENT', NULL)
 ) AS d(rule_name, channel_type, user_email, title, message, sent_at, status, read_at)
 JOIN users u ON u.email = d.user_email
 JOIN rules r ON r.name = d.rule_name
@@ -324,25 +324,9 @@ WHERE NOT EXISTS (SELECT 1 FROM sql_test_logs WHERE user_id = u.id AND sql = d.s
 -- Tabela escalation_policy
 -- Critério de unicidade: role_id
 -- ======================================
-INSERT INTO escalation_policy (timeout_ms, is_active)
-SELECT d.timeout_ms, d.is_active::boolean
+INSERT INTO escalation_policy (timeout_ms)
+SELECT d.timeout_ms
 FROM (VALUES
-    (300000, true)
-) AS d(timeout_ms, is_active)
+    (300000)
+) AS d(timeout_ms)
 WHERE NOT EXISTS (SELECT 1 FROM escalation_policy);
-
--- ======================================
--- Tabela app_settings
--- Critério de unicidade: key
--- ======================================
-INSERT INTO app_settings (key, value, updated_by_user_id)
-SELECT d.key, d.value::jsonb, u.id
-FROM (VALUES
-    ('notification_retry_count', '{"value": 3}'),
-    ('max_incidents_per_user', '{"value": 10}'),
-    ('incident_auto_close_hours', '{"value": 24}'),
-    ('enable_email_notifications', '{"value": true}'),
-    ('default_incident_priority', '{"value": "MEDIUM"}')
-) AS d(key, value)
-CROSS JOIN (SELECT id FROM users WHERE email = 'joao@example.com' LIMIT 1) u
-WHERE NOT EXISTS (SELECT 1 FROM app_settings WHERE key = d.key);

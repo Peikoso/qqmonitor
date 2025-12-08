@@ -1,7 +1,7 @@
 import { UserService } from "../services/users.js";
 import { CreateUsersDto, RegisterUsersDto } from "../dto/users/create-users-dto.js";
 import { AdminUpdateUsersDto, UpdateUsersDto } from "../dto/users/update-users-dto.js";
-import { ResponseUsersDto, ResponseUsersBasicDto } from "../dto/users/response-users-dto.js";
+import { ResponseUsersDto, ResponseUsersBasicDto, ResponseUsersOnlyIdNameDto } from "../dto/users/response-users-dto.js";
 
 export const UsersController = {
     getAllUsers: async  (req, res) => {
@@ -24,6 +24,20 @@ export const UsersController = {
         return res.status(200).json(response);
     },
 
+    getAllwithBasicInfo: async (req, res) => {
+        const currentUserFirebaseUid = req.user.uid;
+        const { name } = req.query;
+
+        const users = await UserService.getAllwithBasicInfo(
+            name,
+            currentUserFirebaseUid
+        );
+
+        const response = ResponseUsersBasicDto.fromArray(users);
+
+        return res.status(200).json(response);
+    },
+
     getSelf: async (req, res) => {
         const currentUserFirebaseUid = req.user.uid;
 
@@ -39,7 +53,7 @@ export const UsersController = {
         
         const user = await UserService.getUserById(id);
 
-        const response = new ResponseUsersBasicDto(user);
+        const response = new ResponseUsersOnlyIdNameDto(user);
 
         return res.status(200).json(response);
     },

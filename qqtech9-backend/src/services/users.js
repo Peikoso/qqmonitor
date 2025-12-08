@@ -30,6 +30,14 @@ export const UserService = {
         return users;
     },
 
+    getAllwithBasicInfo: async (name, currentUserFirebaseUid) => {
+        await AuthService.requireAdmin(currentUserFirebaseUid);
+
+        const users = await UsersRepository.findAllwithBasicInfo(name);
+
+        return users;
+    },
+
     getSelf: async (currentUserFirebaseUid) => {
         const user = await UsersRepository.findByFirebaseId(currentUserFirebaseUid);
 
