@@ -10,7 +10,9 @@ export const UserPreferencesRepository = {
         FROM user_preferences up
         LEFT JOIN user_preferences_channels uc 
             ON up.id = uc.user_preferences_id
-        WHERE up.user_id = $1
+        LEFT JOIN channels c
+            ON uc.channel_id = c.id
+        WHERE up.user_id = $1 AND c.is_active = TRUE
         GROUP BY up.id
         `;
 

@@ -28,7 +28,7 @@ router.use('/escalation-policies', escalationPoliciesRouter);
 router.use('/runners', runnersRouter);
 router.use('/sql-tests', sqlTestsRouter);
 router.use('/user-preferences', userPreferencesRouter);
-router.use('/channels', channelsRouter);
+router.use('/config', channelsRouter);
 router.use('/notifications', notificationsRouter);
 router.use('/audit-logs', auditLogsRouter);
 router.use('/app-settings', appSettingsRouter);

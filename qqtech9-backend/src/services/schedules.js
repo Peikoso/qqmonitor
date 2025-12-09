@@ -13,10 +13,10 @@ export const ScheduleService = {
         const limit = parseInt(perPage) > 0 ? parseInt(perPage) : 10;
         const offset = (pageNumber - 1) * limit;
 
-        const date = new Date().toISOString().split('T')[0];
+        const nowLocal = new Date().toLocaleString('sv-SE');
 
         const schedules = await SchedulesRepository.findUpcomingSchedules(
-            date, userName, roleId, limit, offset
+            nowLocal, userName, roleId, limit, offset
         );
         
         return schedules;

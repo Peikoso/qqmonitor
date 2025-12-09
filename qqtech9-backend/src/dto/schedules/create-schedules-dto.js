@@ -13,10 +13,10 @@ export class CreateSchedulesDto {
             throw new ValidationError('userId is required');
         }
         if(!validateTimestampFormat(this.startTime)) {
-            throw new ValidationError('Start time must be in the format YYYY-MM-DDTHH:MM:SS.sssZ');
+            throw new ValidationError('Start time must be in the format YYYY-MM-DD HH:MM:SS');
         }
         if(!validateTimestampFormat(this.endTime)) {
-            throw new ValidationError('End time must be in the format YYYY-MM-DDTHH:MM:SS.sssZ');
+            throw new ValidationError('End time must be in the format YYYY-MM-DD HH:MM:SS');
         }
 
         return this;

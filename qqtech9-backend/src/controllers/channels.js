@@ -1,22 +1,33 @@
 import { CreateChannelsDto } from "../dto/channels/create-channels-dto.js";
-import { ResponseChannelsDto } from "../dto/channels/response-channels-dto.js";
+import { ResponseChannelsDto, ResponseBasicInfoChannelsDto } from "../dto/channels/response-channels-dto.js";
 import { ChannelService } from "../services/channels.js";
 
 export const ChannelsController = {
     getAllChannels: async (req, res) => {
-        const channels = await ChannelService.getAllChannels();
+        const currentUserFirebaseUid = req.user.uid;
+
+        const channels = await ChannelService.getAllChannels(currentUserFirebaseUid);
 
         const response = ResponseChannelsDto.fromArray(channels);
 
         return res.status(200).json(response);
     },
 
+    getAllActiveChannels: async (req, res) => {
+        const channels = await ChannelService.getAllChannelsActive();
+
+        const response = ResponseBasicInfoChannelsDto.fromArray(channels);
+
+        return res.status(200).json(response);
+    },
+
     createChannel: async (req, res) => {
+        const currentUserFirebaseUid = req.user.uid;
         const channelData = req.body;
 
         const dto = new CreateChannelsDto(channelData).validate();
         
-        const newChannel = await ChannelService.createChannel(dto);
+        const newChannel = await ChannelService.createChannel(dto, currentUserFirebaseUid);
 
         const response = new ResponseChannelsDto(newChannel);
 
@@ -24,13 +35,13 @@ export const ChannelsController = {
     },
 
     updateChannel: async (req, res) => {
+        const currentUserFirebaseUid = req.user.uid;
         const id = req.params.id;
-
         const channelData = req.body;
 
         const dto = new CreateChannelsDto(channelData).validate();
 
-        const updatedChannel = await ChannelService.updateChannel(id, dto);
+        const updatedChannel = await ChannelService.updateChannel(id, dto, currentUserFirebaseUid);
 
         const response = new ResponseChannelsDto(updatedChannel);
 
@@ -38,9 +49,10 @@ export const ChannelsController = {
     },
 
     deleteChannel: async (req, res) => {
+        const currentUserFirebaseUid = req.user.uid;
         const id = req.params.id;
 
-        await ChannelService.deleteChannel(id);
+        await ChannelService.deleteChannel(id, currentUserFirebaseUid);
 
         return res.status(204).send();
     },

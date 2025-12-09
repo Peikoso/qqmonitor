@@ -8,6 +8,10 @@ export const notificationDispatcher = {
             const channel = await ChannelService.getChannelById(notification.channelId);
             const user = await UserService.getUserById(notification.userId);
 
+            if(channel.isActive === false) {
+                throw new Error(`Channel ${channel.id} is inactive.`);
+            }
+
             if(channel.type === 'EMAIL') {
                 await notificationDispatcher.dispatchEmail(channel, notification, user);
             }

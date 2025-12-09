@@ -13,6 +13,18 @@ export const ChannelsRepository = {
         return Channels.fromArray(response.rows);
     },
 
+    findActiveChannels: async () => {
+        const response = await pool.query(
+            `
+            SELECT * FROM channels
+            WHERE is_active = TRUE
+            ORDER BY created_at DESC
+            `
+        );
+        
+        return Channels.fromArray(response.rows);
+    },
+
     findById: async (id) => {
         const selectIdQuery =
         ` 

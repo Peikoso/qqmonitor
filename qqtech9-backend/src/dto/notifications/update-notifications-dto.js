@@ -12,7 +12,7 @@ export class UpdateNotificationsDto {
             throw new ValidationError('Status must be one of the following values: SENT, READED, FAILED');
         }
         if(this.readAt && !validateTimestampFormat(this.readAt)) {
-            throw new ValidationError('ReadAt must be in a valid timestamp format');
+            throw new ValidationError('ReadAt must be in a valid timestamp format YYYY-MM-DD HH:MM:SS');
         }
         
         return this;

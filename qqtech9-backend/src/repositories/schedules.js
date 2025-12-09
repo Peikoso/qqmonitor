@@ -2,7 +2,7 @@ import { pool } from '../config/database-conn.js';
 import { Schedules } from '../models/schedules.js';
 
 export const SchedulesRepository = {
-    findUpcomingSchedules: async (date, userName, roleId, limit, offset) => {
+    findUpcomingSchedules: async (nowLocal, userName, roleId, limit, offset) => {
         const selectQuery = 
         `
         SELECT 
@@ -30,7 +30,7 @@ export const SchedulesRepository = {
         LEFT JOIN roles r
             ON ur.role_id = r.id
         WHERE 
-            ($1 BETWEEN DATE(s.start_time) AND DATE(s.end_time) OR s.start_time > $1)
+            (s.end_time >= $1)
             AND ($2::varchar IS NULL OR u.name ILIKE '%' || $2 || '%')
             AND ($3::uuid IS NULL OR r.id = $3::uuid)
         GROUP BY s.id, u.id 
@@ -39,7 +39,7 @@ export const SchedulesRepository = {
         `;
 
         const values = [
-            date,
+            nowLocal,
             userName || null,
             roleId || null,
             limit,
@@ -51,12 +51,14 @@ export const SchedulesRepository = {
         return Schedules.fromArray(result.rows);
     },
 
-    findCurrentScheduleByRolesId: async (rolesId, date) => {
+    findCurrentScheduleByRolesId: async (rolesId, nowLocal) => {
         const selectQuery = 
         `
         SELECT s.* FROM schedules s
         JOIN users u 
             ON s.user_id = u.id
+        JOIN users_roles ur
+            ON u.id = ur.user_id
         WHERE 
             ur.role_id = ANY($1::uuid[])
             AND $2 BETWEEN s.start_time AND s.end_time
@@ -64,7 +66,7 @@ export const SchedulesRepository = {
         LIMIT 1;
         `;
 
-        const result = await pool.query(selectQuery, [rolesId, date]);
+        const result = await pool.query(selectQuery, [rolesId, nowLocal]);
 
         if(!result.rows[0]){
             return null;

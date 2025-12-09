@@ -24,7 +24,7 @@ export function validateTimeFormat(time) {
 }
 
 export function validateTimestampFormat(timestamp) {
-  const regex = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d+)?(?:Z|[+-]\d{2}:?\d{2})?$/;
+  const regex = /^\d{4}-\d{2}-\d{2}[ T]\d{2}:\d{2}:\d{2}(?:\.\d+)?(?:Z|[+-]\d{2}:?\d{2})?$/;
   if (!regex.test(timestamp)) {
     return false;
   }
