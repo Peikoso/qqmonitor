@@ -6,14 +6,11 @@ class Runners(Base):
     __tablename__ = 'runners'
 
     id = Column(UUID, primary_key=True)
-    rule_id = Column(UUID, ForeignKey('rules.id'))
+    rule_id = Column(UUID)
     status = Column(String)
     last_run_at = Column(DateTime)
     created_at = Column(DateTime, server_default=func.now())
     updated_at = Column(DateTime, server_default=func.now(), onupdate=func.now())
-
-
-    rule = None
 
     @staticmethod
     def from_array(runners_array):
@@ -38,15 +35,13 @@ class RunnerQueue(Base):
     __tablename__ = 'runner_queue'
 
     id = Column(UUID, primary_key=True)
-    runner_id = Column(UUID, ForeignKey('runners.id'))
+    runner_id = Column(UUID)
     status = Column(String, default='PENDING')
     scheduled_for = Column(DateTime)
     started_at = Column(DateTime)
     finished_at = Column(DateTime)
     attempt_count = Column(Integer, default=0)
 
-    # Campo virtual para rule
-    rule = None
 
     def start(self):
         self.status = 'PROCESSING'
@@ -80,16 +75,14 @@ class RunnerLogs(Base):
     __tablename__ = 'runner_logs'
 
     id = Column(UUID, primary_key=True)
-    runner_id = Column(UUID, ForeignKey('runners.id'))
-    queue_id = Column(UUID, ForeignKey('runner_queue.id'))
+    runner_id = Column(UUID)
+    queue_id = Column(UUID)
     run_time_ms = Column(Integer)
     execution_status = Column(String)
     rows_affected = Column(Integer)
     result = Column(Text)
     error = Column(Text)
     executed_at = Column(DateTime, server_default=func.now())
-
-    rule = None
 
     @staticmethod
     def from_array(runner_logs_array):

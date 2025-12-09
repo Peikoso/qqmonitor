@@ -130,7 +130,6 @@ CREATE TABLE IF NOT EXISTS incidents (
     priority varchar(10) NOT NULL,
     ack_at timestamp,
     closed_at timestamp,
-    escalation_level integer NOT NULL DEFAULT 0,
     created_at timestamp NOT NULL DEFAULT now(),
     updated_at timestamp NOT NULL DEFAULT now(),
     CONSTRAINT fk_incidents_rule FOREIGN KEY (rule_id) REFERENCES rules(id) ON DELETE SET NULL,
@@ -265,6 +264,20 @@ CREATE TABLE IF NOT EXISTS escalation_policy (
     timeout_ms integer NOT NULL,
     created_at timestamp NOT NULL DEFAULT now(),
     updated_at timestamp NOT NULL DEFAULT now()
+);
+
+-- ======================================
+-- Tabela escalation_policy_steps
+-- ======================================
+CREATE TABLE IF NOT EXISTS escalation_steps (
+    id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+    incident_id uuid NOT NULL,
+    user_id uuid,
+    escalation_order integer NOT NULL DEFAULT 1, -- 1, 2, 3...
+    escalated_at timestamp NOT NULL DEFAULT now(),
+    result varchar(20) NOT NULL, -- SUCCESS, FAILED, NOTIFIED ADMINS
+    CONSTRAINT fk_escalation_incident FOREIGN KEY (incident_id) REFERENCES incidents(id) ON DELETE CASCADE,
+    CONSTRAINT fk_escalation_user FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE SET NULL
 );
 
 -- ======================================

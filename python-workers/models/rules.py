@@ -22,8 +22,6 @@ class Rules(Base):
     created_at = Column(DateTime, server_default=func.now())
     updated_at = Column(DateTime, server_default=func.now(), onupdate=func.now())
 
-    roles = None
-
     @staticmethod
     def from_array(rules_array):
         return [Rules(**rule) if isinstance(rule, dict) else rule for rule in rules_array]
