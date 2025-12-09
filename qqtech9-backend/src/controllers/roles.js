@@ -6,8 +6,9 @@ import { ResponseRolesDto } from '../dto/roles/response-roles-dto.js';
 export const RolesController = {
     getAllRoles: async (req, res) => {
         const currentUserFirebaseUid = req.user.uid;
+        const { name, page, perPage } = req.query;
 
-        const roles = await RoleService.getAllRoles(currentUserFirebaseUid);
+        const roles = await RoleService.getAllRoles(currentUserFirebaseUid, name, page, perPage);
 
         const response = ResponseRolesDto.fromArray(roles);
 

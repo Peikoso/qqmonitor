@@ -7,12 +7,16 @@ import { AuthService } from './auth.js';
 
 
 export const RoleService = {
-    getAllRoles: async (currentUserFirebaseUid) => {
+    getAllRoles: async (currentUserFirebaseUid, name, page, perPage) => {
         const currentUser = await UserService.getSelf(currentUserFirebaseUid);
 
         const userRoles = currentUser.roles.map(role => role.id);
 
-        const roles = await RolesRepository.findAll(currentUser.profile, userRoles);
+        const pageNumber = parseInt(page) > 0 ? parseInt(page) : 1;
+        const limit = parseInt(perPage) > 0 ? parseInt(perPage) : 10;
+        const offset = (pageNumber - 1) * limit;
+
+        const roles = await RolesRepository.findAll(currentUser.profile, userRoles, name, limit, offset);
         
         return roles;
     },
