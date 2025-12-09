@@ -7,7 +7,8 @@ from repositories.runners import RunnersRepository, RunnerQueueRepository, Runne
 from repositories.rules import RulesRepository
 from sqlalchemy import text
 from config.database import get_session
-from config.index import API_INCIDENTS_URL
+from config.index import API_INCIDENTS_URL, TOKEN_API
+
 import requests
 
 
@@ -105,7 +106,7 @@ class RunnerWorker:
                 }
                 
                 try:
-                    response = requests.post(API_INCIDENTS_URL, json=payload)
+                    response = requests.post(API_INCIDENTS_URL, json=payload, headers={"Authorization": f"Token {TOKEN_API}"})
                     
                     print(f'[Runner Worker] Notificação enviada para API de incidentes. Status code: {response.status_code}') 
                 except Exception as api_error:

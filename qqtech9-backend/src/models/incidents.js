@@ -9,6 +9,7 @@ export class Incidents {
         this.priority = incident.priority;
         this.ackAt = incident.ack_at ?? incident.ackAt;
         this.closedAt = incident.closed_at ?? incident.closedAt;
+        this.escalationLevel = incident.escalation_level ?? incident.escalationLevel;
         this.createdAt = incident.created_at ?? incident.createdAt;
         this.updatedAt = incident.updated_at ?? incident.updatedAt;
 

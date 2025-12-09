@@ -130,6 +130,7 @@ CREATE TABLE IF NOT EXISTS incidents (
     priority varchar(10) NOT NULL,
     ack_at timestamp,
     closed_at timestamp,
+    escalation_level integer NOT NULL DEFAULT 0,
     created_at timestamp NOT NULL DEFAULT now(),
     updated_at timestamp NOT NULL DEFAULT now(),
     CONSTRAINT fk_incidents_rule FOREIGN KEY (rule_id) REFERENCES rules(id) ON DELETE SET NULL,

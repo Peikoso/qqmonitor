@@ -7,6 +7,7 @@ export class ResponseIncidentsDto {
         this.priority = incident.priority;
         this.ackAt = incident.ackAt;
         this.closedAt = incident.closedAt;
+        this.escalationLevel = incident.escalationLevel;
         this.createdAt = incident.createdAt;
         
         this.roles = incident.roles;
