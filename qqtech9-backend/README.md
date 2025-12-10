@@ -2,8 +2,6 @@
 
 Sistema de monitoramento e execução automatizada de regras SQL com notificações em tempo real, escalonamento de incidentes e gestão de canais de comunicação.
 
-**✨ Sprint 3 Completa**: Canais de notificação, Preferências de usuário, Políticas de escalonamento
-
 ## 📋 Pré-requisitos
 
 - **Node.js** 20+ 
@@ -144,8 +142,6 @@ qqtech9-backend/
 │   ├── repositories/    # Acesso a dados (SQL)
 │   ├── routers/         # Definição de rotas
 │   ├── services/        # Lógica de negócio
-│   │   ├── notification-dispatcher.js  # Disparo de notificações ✨
-│   │   └── notifications.js            # Lógica de notificações ✨
 │   ├── utils/           # Utilitários
 │   └── main.js          # Ponto de entrada
 ├── script.sql           # Migration principal
