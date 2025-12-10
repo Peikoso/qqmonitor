@@ -4,6 +4,7 @@ import { NotificationsController } from '../controllers/notifications.js';
 const router = express.Router();
 
 router.get('/me', NotificationsController.getSelfNotifications);
+router.post('/', NotificationsController.createNotification);
 router.patch('/:id', NotificationsController.updateNotification);
 //router.delete('/:id', NotificationsController.deleteNotification);
 

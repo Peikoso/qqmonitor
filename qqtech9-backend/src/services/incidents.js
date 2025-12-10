@@ -87,6 +87,7 @@ export const IncidentService = {
             incidentId: savedIncident.id,
             title: 'Novo Incidente Reportado',
             message: `Novo Incidente reportado para Regra: ${rule.name}, Prioridade: ${savedIncident.priority}.`,
+            userId: savedIncident.assignedUserId
         });
 
         return savedIncident;

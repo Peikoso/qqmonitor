@@ -3,12 +3,13 @@ import { UnauthorizedError } from "../utils/errors.js";
 import { config } from "../config/index.js";
 
 const publicRoutes = [
-  { method: 'POST', path: '/api/v1/users/register' },
+  { method: 'POST', path: '/api/v1users/register' },
   { method: 'POST', path: '/api/v1/login' }
 ];
 
 const tokenRoutes = [
   { method: 'POST', path: '/api/v1/incidents' },
+  { method: 'POST', path: '/api/v1/notifications'}
 ];
 
 export const AuthMiddleware = async (req, res, next) => {

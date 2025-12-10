@@ -3,7 +3,10 @@ from repositories.schedules import SchedulesRepository
 from repositories.escalation import EscalationRepository
 from repositories.incidents import IncidentsRepository
 from repositories.users import UsersRepository
+from repositories.rules import RulesRepository
 from models.escalation import EscalationSteps
+import requests
+from config.index import TOKEN_API, API_URL
 
 class EscalationWorker:
     def __init__(self):
@@ -46,7 +49,7 @@ class EscalationWorker:
                 await self.escalate_incident(incident)
                 await asyncio.sleep(1) 
             except Exception as error:
-                print(f'[Escalation Worker] Erro ao escalar incidente {incident.id}: {error}')
+                print(f'[Escalation Worker] Erro ao escalar/notificar incidente {incident.id}: {error}')
                 
                 
                 
@@ -83,32 +86,48 @@ class EscalationWorker:
             
             print(f'[Escalation Worker] Notificando usuário {next_schedule.user_id} sobre o incidente {incident.id}...')
             
-            # Aqui você pode adicionar a lógica para enviar uma notificação real ao usuário
+            rule = await RulesRepository.find_by_id(incident.rule_id)
+            if not rule:
+                raise Exception('Rule not found.')
+            
+            payload = {
+                'incidentId': str(incident.id),
+                'title': f'Alerta: Incidente não reconhecido.',
+                'message': f'Incidente reportado para Regra: {rule.name}, Prioridade: {rule.priority}, não foi reconhecido escalamos para você.',
+                'userId': str(next_schedule.user_id)
+            }
+            
+            try:
+                response = requests.post(f'{API_URL}/notifications', json=payload, headers={"Authorization": f"Token {TOKEN_API}"})
+
+                print(f'[Escalation Worker] Notificação enviada para API. Status code: {response.status_code}')                
+            except Exception as api_error:
+                print(f'[Escalation Worker] Error ao notificar API: {str(api_error)}')
             
         except Exception as error:
-            escalation_step = EscalationSteps(
-                incident_id = incident.id,
-                user_id = None,
-                escalation_order = next_escalation_order,
-                result = 'FAILED'
-            )
+            if next_escalation_order < 3:
+                escalation_step = EscalationSteps(
+                    incident_id = incident.id,
+                    user_id = None,
+                    escalation_order = next_escalation_order,
+                    result = 'FAILED'
+                )
+                
+                await EscalationRepository.create_step(escalation_step)
             
-            await EscalationRepository.create_step(escalation_step)
-            
-            print(f'[Escalation Worker] Falha ao escalar incidente {incident.id}: {error}')
             raise error
         
     async def notify_admins(self, incident):
         print(f'[Escalation Worker] Nenhum usuário disponível para escalonamento do incidente {incident.id}.')
         
-        print(f'[Escalation Worker] Tentando encontrar um admin para o incidente {incident.id}...')
+        print(f'[Escalation Worker] Tentando encontrar admins para o incidente {incident.id}...')
         
         admins = await UsersRepository.find_admin_with_role(incident.roles_ids)
         
         if (len(admins) == 0):
             print(f'[Escalation Worker] Nenhum admin encontrado para o incidente {incident.id}.')
             
-            raise Exception('Nenhum admin disponível para escalonamento.')
+            raise Exception('Nenhum admin disponível para notificação.')
         
         escalation_step = EscalationSteps(
             incident_id = incident.id,
@@ -122,9 +141,24 @@ class EscalationWorker:
         for admin in admins:
             print(f'[Escalation Worker] Notificando incidente {incident.id} para o admin {admin.id}...')
             
-            # Aqui você pode adicionar a lógica para enviar uma notificação real ao admin
+            rule = await RulesRepository.find_by_id(incident.rule_id)
+            if not rule:
+                raise Exception('Rule not found.')
             
-        return
+            payload = {
+                'incidentId': str(incident.id),
+                'title': f'Alerta: Incidente não reconhecido.',
+                'message': f'Incidente reportado para Regra: {rule.name}, Prioridade: {rule.priority}, incidente não foi reconhecido por favor verifique.',
+                'userId': str(admin.id)
+            }
+            
+            try:
+                response = requests.post(f'{API_URL}/notifications', json=payload, headers={"Authorization": f"Token {TOKEN_API}"})
+                
+                print(f'[Escalation Worker] Notificação enviada para API. Status code: {response.status_code}')
+            except Exception as api_error:
+                print(f'[Escalation Worker] Error ao notificar API: {str(api_error)}')
+            
     
 
 if __name__ == '__main__':

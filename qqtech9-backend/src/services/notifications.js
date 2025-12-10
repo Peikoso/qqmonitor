@@ -33,15 +33,15 @@ export const NotificationService = {
     },
 
     createNotification: async (notificationData) => {
-        const incident = await IncidentService.getIncidentById(notificationData.incidentId);
+        await IncidentService.getIncidentById(notificationData.incidentId);
         let userPreferences;
         
         try{
-            if(!incident.assignedUserId){
+            if(!notificationData.userId){
                 throw new NotFoundError('No user assigned to the incident.');
             }
             
-            userPreferences = await UserPreferenceService.getUserPreferencesByUserId(incident.assignedUserId);
+            userPreferences = await UserPreferenceService.getUserPreferencesByUserId(notificationData.userId);
 
             if(userPreferences.channels.length === 0){
                 throw new NotFoundError('No notification channels configured for the user.');
@@ -52,7 +52,7 @@ export const NotificationService = {
 
                 if(isWithinTimeRange(nowLocal, userPreferences.dndStartTime, userPreferences.dndEndTime)){
                     const notification = new Notifications(notificationData);
-                    notification.userId = incident.assignedUserId;
+                    notification.userId = notificationData.userId;
                     notification.sentAt = new Date();
                     notification.channelId = null;
                     notification.status = 'SILENCED';
@@ -70,7 +70,7 @@ export const NotificationService = {
             notification.sentAt = new Date();
             notification.status = "FAILED";
             notification.error = error.message;
-            notification.userId = incident.assignedUserId ?? null; 
+            notification.userId = notificationData.userId ?? null; 
             notification.channelId = null;   
 
             await NotificationsRepository.create(notification);
@@ -81,7 +81,7 @@ export const NotificationService = {
 
         for (const channelId of userPreferences.channels) {
             const notification = new Notifications(notificationData);
-            notification.userId = incident.assignedUserId;
+            notification.userId = notificationData.userId;
             notification.sentAt = new Date();
             notification.channelId = channelId;
 

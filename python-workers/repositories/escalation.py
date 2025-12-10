@@ -28,8 +28,7 @@ class EscalationRepository:
             query = text(
             """
             INSERT INTO escalation_steps (incident_id, user_id, escalation_order, escalated_at, result)
-            VALUES (:incident_id, :user_id, :escalation_order, NOW(), :result)
-            RETURNING *;
+            VALUES (:incident_id, :user_id, :escalation_order, NOW(), :result);
             """
             )
             
@@ -40,11 +39,12 @@ class EscalationRepository:
                 result = escalation_step.result
             )
             
-            result = await session.execute(query)
-            row = result.fetchone()
+            await session.execute(query)
             await session.commit()
             
-           
+    @staticmethod
+    async def update_step(escalation_step):
+        ...
         
     @staticmethod
     async def get_next_order(incident_id):
