@@ -73,10 +73,9 @@ AND NOT EXISTS (SELECT 1 FROM user_preferences WHERE user_id = users.id);
 INSERT INTO channels (type, name, config, is_active)
 SELECT d.type, d.name, d.config::jsonb, d.is_active::boolean
 FROM (VALUES
-    ('EMAIL', 'Email Corporativo', '{"service": "gmail", "user": "corp@example.com", "password": "xxxxx"}', true),
+    ('EMAIL', 'Email Corporativo', '{"service": "", "user": "", "password": ""}', true),
     ('COMUNIQ', 'ComunIQ', '{"api_key": "abcd1234efgh5678", "channel_id": "support-alerts"}', true),
-    ('PUSH', 'Notificação Push', '{"firebase_topic": "incidents"}', true),
-    ('PUSH SOUND', 'Push Sound', '{"webhook_url": "https://hooks.slack.com/services/xxx"}', true)
+    ('PUSH', 'Firebase Cloud Messaging', '{}', true)
 ) AS d(type, name, config, is_active)
 WHERE NOT EXISTS (SELECT 1 FROM channels WHERE type = d.type);
 
@@ -272,7 +271,7 @@ FROM (VALUES
     ('Verificar Usuarios', 'EMAIL', 'joao@example.com', 'Error ao verificar usuarios', 'Timeout da query de 5 minutos', '2025-11-27 10:30:20', 'READED', '2025-11-27 10:32:00'),
     ('Verificar Incidentes', 'COMUNIQ', 'penkas@example.com', 'CRÍTICO: Incidentes fora de controle', 'Incidentes críticos detectados', '2025-11-27 11:45:15', 'READED', '2025-11-27 11:46:00'),
     ('Verificar Notificações', 'PUSH', 'admin@example.com', 'Error ao enviar Notificações', 'Verificar error', '2025-11-27 12:00:00', 'SENT', NULL),
-    ('Verificar Usuarios', 'PUSH SOUND', 'rogerio@example.com', 'Usuarios Execidos', 'Verificar por que tantos usuarios', '2025-11-26 15:35:00', 'READED', '2025-11-26 15:40:00'),
+    ('Verificar Usuarios', 'PUSH', 'rogerio@example.com', 'Usuarios Execidos', 'Verificar por que tantos usuarios', '2025-11-26 15:35:00', 'READED', '2025-11-26 15:40:00'),
     ('Verificar Incidentes', 'EMAIL', 'admin@example.com', 'Incidente Crítico', 'Incidente crítico detectado', '2025-11-27 08:16:00', 'SENT', NULL)
 ) AS d(rule_name, channel_type, user_email, title, message, sent_at, status, read_at)
 JOIN users u ON u.email = d.user_email
