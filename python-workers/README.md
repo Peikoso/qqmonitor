@@ -26,7 +26,7 @@ python-workers/
 ├── worker/
 │   ├── runner_worker.py     # Worker que processa jobs da fila de runners
 │   ├── runner_scheduler.py  # Scheduler que agenda runners para execução
-│   └── escalation_worker.py # Worker de escalonamento de incidentes ✨ Sprint 3
+│   └── escalation_worker.py # Worker de escalonamento de incidentes
 ├── requirements.txt         # Dependências Python
 ├── .env.example            # Exemplo de variáveis de ambiente
 ├── Dockerfile              # Container Docker
@@ -89,7 +89,7 @@ Agenda runners para execução baseado nas regras:
 python -m worker.runner_scheduler
 ```
 
-#### Escalation Worker ✨ Sprint 3
+#### Escalation Worker 
 Processa escalonamento de incidentes não reconhecidos:
 ```bash
 python -m worker.escalation_worker
