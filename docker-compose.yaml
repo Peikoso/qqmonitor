@@ -53,7 +53,7 @@ services:
         condition: service_healthy
     environment:
       DATABASE_URL: postgresql+asyncpg://${POSTGRES_USER}:${POSTGRES_PASSWORD}@${DB_HOST}:${POSTGRES_PORT}/${POSTGRES_DB}
-      API_INCIDENTS_URL: ${API_INCIDENTS_URL}
+      API_URL: ${API_URL}
     env_file:
       - .env
     command: ["sh", "-c", "echo 'Esperando a API criar o banco...'; sleep 15; python -u -m worker.runner_scheduler"]
@@ -71,10 +71,28 @@ services:
         condition: service_healthy
     environment:
       DATABASE_URL: postgresql+asyncpg://${POSTGRES_USER}:${POSTGRES_PASSWORD}@${DB_HOST}:${POSTGRES_PORT}/${POSTGRES_DB}
-      API_INCIDENTS_URL: ${API_INCIDENTS_URL}
+      API_URL: ${API_URL}
     env_file:
       - .env
     command: ["sh", "-c", "echo 'Esperando a API criar o banco...'; sleep 15; python -u -m worker.runner_worker"]
+    volumes:
+      - ./python-workers:/python-workers
+
+  # Python Worker - Escalation Worker
+  qqmonitor_escalation_worker:
+    build:
+      context: ./python-workers
+      dockerfile: Dockerfile
+    container_name: qqmonitor_escalation_worker
+    depends_on:
+      qqmonitor_database:
+        condition: service_healthy
+    environment:
+      DATABASE_URL: postgresql+asyncpg://${POSTGRES_USER}:${POSTGRES_PASSWORD}@${DB_HOST}:${POSTGRES_PORT}/${POSTGRES_DB}
+      API_URL: ${API_URL}
+    env_file:
+      - .env
+    command: ["sh", "-c", "echo 'Esperando a API criar o banco...'; sleep 15; python -u -m worker.escalation_worker"]
     volumes:
       - ./python-workers:/python-workers
 

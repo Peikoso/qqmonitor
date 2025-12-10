@@ -20,7 +20,7 @@ const PORT = config.PORT || 8000;
 // Iniciar o banco (criação de tabelas, inserção de dados e usuário admin)
 (async () => {
   await dbSetup.initDB();
-  //await dbSetup.insertDefaultData();
+  await dbSetup.insertDefaultData();
   await dbSetup.createAdminUser();
 })();
 

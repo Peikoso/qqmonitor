@@ -8,6 +8,7 @@ Este arquivo sobe todos os serviços do QQMonitor simultaneamente.
 2. **qqmonitor_api** - API Node.js (Backend)
 3. **qqmonitor_runner_scheduler** - Worker Python (Scheduler)
 4. **qqmonitor_runner_worker** - Worker Python (Worker)
+5. **qqmonitor_escalation_worker** - Worker Python (Escalonamento - futuro)
 
 ## Como usar:
 
@@ -25,6 +26,7 @@ docker-compose logs -f
 docker-compose logs -f qqmonitor_api
 docker-compose logs -f qqmonitor_runner_scheduler
 docker-compose logs -f qqmonitor_runner_worker
+docker-compose logs -f qqmonitor_escalation_worker
 ```
 
 ### Parar os serviços:
@@ -61,10 +63,3 @@ Para acesar faça login via API
 `http://localhost:PORT/api/v1/login`
 Use o USUÁRIO 'admin@example.com' e SENHA definidos nas variáveis de ambiente (DEFAULT_PASSWORD) para autenticação. Após o login, você deve utilizar o token retornado para autenticação nos endpoints abaixo:
 - DB-Test : `http://localhost:PORT/api/v1/db-test`
-- Regras: `http://localhost:PORT/api/v1/rules`
-- Runners: `http://localhost:PORT/api/v1/runners`
-- Runner Queue: `http://localhost:PORT/api/v1/runners/queue`
-- Runner Logs: `http://localhost:PORT/api/v1/runners/logs`
-- Métricas Básicas: `http://localhost:PORT/api/v1/metrics/basic`
-
-
