@@ -1,6 +1,7 @@
 import nodemailer from "nodemailer";
 import { ChannelService } from './channels.js';
 import { UserService } from './users.js';
+import { admin } from '../config/firebase.js';
 
 export const notificationDispatcher = {
     dispatchNotification: async (notification) => {
@@ -14,6 +15,10 @@ export const notificationDispatcher = {
 
             if(channel.type === 'EMAIL') {
                 await notificationDispatcher.dispatchEmail(channel, notification, user);
+            }
+
+            if(channel.type === 'PUSH') {
+                await notificationDispatcher.dispatchPush(notification, user);
             }
 
         } catch (error) {
@@ -37,6 +42,26 @@ export const notificationDispatcher = {
             subject: notification.title,
             text: notification.message,
         });
+    },
+
+    dispatchPush: async (notification, user) => {
+        if (!user.fcmToken) {
+            throw new Error(`User ${user.id} does not have FCM token`);
+        }
+
+        const message = {
+            notification: {
+                title: notification.title,
+                body: notification.message
+            },
+            data: {
+                incidentId: notification.incidentId.toString(),
+                type: 'incident_notification'
+            },
+            token: user.fcmToken
+        };
+
+        await admin.messaging().send(message);
     }
 
 }

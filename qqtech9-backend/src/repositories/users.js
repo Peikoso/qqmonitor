@@ -281,6 +281,19 @@ export const UsersRepository = {
         }
     },
 
+    updateFcmToken: async (id, fcmToken) => {
+        const updateFcmTokenQuery = `
+            UPDATE users
+            SET fcm_token = $1, updated_at = NOW()
+            WHERE id = $2
+            RETURNING *;
+        `;
+
+        const result = await pool.query(updateFcmTokenQuery, [fcmToken, id]);
+
+        return new Users(result.rows[0]);
+    },
+
     delete: async (id) => {
         const deleteUserQuery = `
             DELETE FROM users

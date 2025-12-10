@@ -171,6 +171,14 @@ export const UserService = {
         return savedUser;
     },
 
+    updateFcmToken: async (dto, currentUserFirebaseUid) => {
+        const existingUser = await UserService.getSelf(currentUserFirebaseUid);
+
+        const savedUser = await UsersRepository.updateFcmToken(existingUser.id, dto.fcmToken);
+
+        return savedUser;
+    },
+
     deleteUser: async (id, currentUserFirebaseUid) => {
         await AuthService.requireAdmin(currentUserFirebaseUid);
 

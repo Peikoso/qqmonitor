@@ -11,6 +11,7 @@ router.post('/', UsersController.createUser);
 router.post('/register', UsersController.registerUser);
 router.post('/:userId/approve', UsersController.approveUser)
 router.patch('/me', UsersController.userUpdateSelf);
+router.patch('/fcm-token', UsersController.updateFcmToken);
 router.patch('/:id', UsersController.adminUpdateUser);
 router.delete('/:id', UsersController.deleteUser);
 

@@ -26,6 +26,7 @@ CREATE TABLE IF NOT EXISTS users (
     picture varchar(255),
     profile varchar(30) NOT NULL, -- ex: admin, operator, viewer
     pending boolean NOT NULL DEFAULT true,
+    fcm_token text,
     created_at timestamp NOT NULL DEFAULT now(),
     updated_at timestamp NOT NULL DEFAULT now()
 );
@@ -306,6 +307,7 @@ CREATE INDEX IF NOT EXISTS idx_user_preferences_channels_channel_id ON user_pref
 CREATE INDEX IF NOT EXISTS idx_rules_roles_role_id ON rules_roles (role_id);
 CREATE INDEX IF NOT EXISTS idx_notifications_user_id ON notifications (user_id);
 CREATE INDEX IF NOT EXISTS idx_runner_queue_status_scheduled  ON runner_queue (status, scheduled_for) WHERE status = 'PENDING';
+CREATE INDEX IF NOT EXISTS idx_users_fcm_token ON users(fcm_token) WHERE fcm_token IS NOT NULL;
 
 -- ======================================
 -- Views dashboard

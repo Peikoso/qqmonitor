@@ -2,6 +2,7 @@ import { UserService } from "../services/users.js";
 import { CreateUsersDto, RegisterUsersDto } from "../dto/users/create-users-dto.js";
 import { AdminUpdateUsersDto, UpdateUsersDto } from "../dto/users/update-users-dto.js";
 import { ResponseUsersDto, ResponseUsersBasicDto, ResponseUsersOnlyIdNameDto } from "../dto/users/response-users-dto.js";
+import { FcmTokenDto } from "../dto/users/fcm-token-dto.js"
 
 export const UsersController = {
     getAllUsers: async  (req, res) => {
@@ -116,6 +117,20 @@ export const UsersController = {
         const dto = new UpdateUsersDto(userData).validate();
 
         const updatedUser = await UserService.userUpdateSelf(dto, currentUserFirebaseUid);
+
+        const response = new ResponseUsersDto(updatedUser);
+
+        return res.status(200).json(response);
+    },
+
+    updateFcmToken: async (req, res) => {
+        const currentUserFirebaseUid = req.user.uid;
+        const fcmTokenData = req.body;
+        console.log()
+
+        const dto = new FcmTokenDto(fcmTokenData).validate();
+
+        const updatedUser = await UserService.updateFcmToken(dto, currentUserFirebaseUid);
 
         const response = new ResponseUsersDto(updatedUser);
 

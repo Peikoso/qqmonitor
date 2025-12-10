@@ -10,6 +10,7 @@ export class ResponseUsersDto {
         this.profile = user.profile;
         this.roles = user.roles;
         this.pending = user.pending;
+        this.fcmToken = user.fcmToken;
     }
     
     static fromArray(usersArray) {

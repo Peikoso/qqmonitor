@@ -10,6 +10,7 @@ export class Users {
         this.profile = user.profile;
         this.roles = user.roles ?? [];
         this.pending = user.pending;
+        this.fcmToken = user.fcm_token ?? user.fcmToken;
         this.createdAt = user.created_at ?? user.createdAt;
         this.updatedAt = user.updated_at ?? user.updatedAt;
     }
