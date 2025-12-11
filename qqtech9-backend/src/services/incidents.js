@@ -166,7 +166,6 @@ export const IncidentLogService = {
 
         } catch(error){
             throw new Error('Failed to reexecute the rule associated with the incident.');
-            return;
         }
 
         const newIncidentsLogs = new IncidentsLogs({

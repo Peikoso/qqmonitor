@@ -2,11 +2,12 @@ import express from "express";
 import fetch from "node-fetch";
 import { config } from "../config/index.js";
 import { redact } from "../utils/redact.js";
+import { RegisterLimiter } from "../middleware/rate-limit.js";
 
 const router = express.Router();
 const API_KEY = config.FIREBASE_API_KEY; // do Firebase Console > Project settings > Web API Key
 
-router.post("/", async (req, res) => {
+router.post("/", RegisterLimiter, async (req, res) => {
   const { email, password } = req.body;
 
   if (!email || !password) {

@@ -9,6 +9,7 @@ import { config } from './config/index.js';
 import dbSetup from './config/db-setup.js';
 import helmet from 'helmet';
 import { redact } from './utils/redact.js';
+import { GlobalLimiter } from './middleware/rate-limit.js';
 
 
 const app = express();
@@ -34,6 +35,12 @@ app.use(helmet({
       frameSrc: ["'none'"],
     },
   },
+  dnsPrefetchControl: {
+    allow: false
+  },
+  permittedCrossDomainPolicies: {
+    permittedPolicies: 'none'
+  },
   referrerPolicy: {
     policy: 'no-referrer'
   }
@@ -46,6 +53,7 @@ app.use(cors({
 }));
 
 app.use(express.json());
+app.use(GlobalLimiter)
 app.use(AuthMiddleware);  // Comente para desativar a Auth (Vai quebrar praticamente todos endpoints, sendo necessarios alterações para funcionar sem Auth..)
 app.use(ValidateBodyMiddleware)
 
