@@ -1,4 +1,4 @@
-import { redact } from "../utils/redact";
+import { redact } from "../utils/redact.js";
 
 export const ErrorMiddleware = (err, req, res, next) => {
     const status = err.status || 500;
