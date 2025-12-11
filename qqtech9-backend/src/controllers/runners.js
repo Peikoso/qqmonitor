@@ -36,10 +36,10 @@ export const RunnerQueueController = {
 export const RunnerLogsController = {
     getAllRunnersLogs: async (req, res) => {
         const currentUserFirebaseUid = req.user.uid;
-        const { ruleName, executionStatus, rulePriority, databaseType, page, perPage } = req.query;
-
+        const { ruleName, executionStatus, page, perPage } = req.query;
+        
         const runnersLogs = await RunnerLogService.getAllRunnersLogs(
-            currentUserFirebaseUid, ruleName, executionStatus, rulePriority, databaseType, page, perPage
+            currentUserFirebaseUid, ruleName, executionStatus, page, perPage
         );
         
         const response = ResponseRunnerLogsDto.fromArray(runnersLogs);

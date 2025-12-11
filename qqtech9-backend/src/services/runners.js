@@ -75,7 +75,7 @@ export const RunnerQueueService = {
 
 export const RunnerLogService = {
     getAllRunnersLogs: async (
-        currentUserFirebaseUid, ruleName, executionStatus, rulePriority, databaseType, page, perPage
+        currentUserFirebaseUid, ruleName, executionStatus, page, perPage
     ) => {
         const user = await UserService.getSelf(currentUserFirebaseUid);
         await AuthService.requireAdmin(user);
@@ -87,9 +87,6 @@ export const RunnerLogService = {
         const runnersLogs = await RunnerLogsRepository.findAll(
             ruleName,
             executionStatus, 
-            rulePriority, 
-            databaseType,
-            user.roles.map(role => role.id), 
             limit, 
             offset
         );

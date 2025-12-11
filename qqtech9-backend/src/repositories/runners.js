@@ -259,19 +259,17 @@ export const RunnerQueueRepository = {
 
 export const RunnerLogsRepository = {
     findAll: async (
-        ruleName, executionStatus, rulePriority, databaseType, roles, limit, offset
+        ruleName, executionStatus, limit, offset
     ) => {
         const selectQuery =
         `
         SELECT 
             rlogs.*,
-            json_agg(
-                json_build_object(
-                    'id', rl.id,
-                    'name', rl.name,
-                    'database_type', rl.database_type,
-                    'priority', rl.priority
-                )
+            json_build_object(
+                'id', rl.id,
+                'name', rl.name,
+                'database_type', rl.database_type,
+                'priority', rl.priority
             ) AS rule
         FROM runner_logs rlogs
         LEFT JOIN runners r
@@ -281,28 +279,14 @@ export const RunnerLogsRepository = {
         WHERE
             ($1::varchar IS NULL OR rl.name ILIKE '%' || $1 || '%')
             AND ($2::varchar IS NULL OR rlogs.execution_status = $2)
-            AND ($3::varchar IS NULL OR rl.priority = $3)
-            AND ($4::varchar IS NULL OR rl.database_type = $4)
-            AND (
-                $5::uuid[] IS NOT NULL
-                AND EXISTS (
-                    SELECT 1
-                    FROM rules_roles rr_auth
-                    WHERE rr_auth.rule_id = rl.id
-                    AND rr_auth.role_id = ANY($5::uuid[])
-                )
-            )
-        GROUP BY rlogs.id
+        GROUP BY rlogs.id, rl.id
         ORDER BY executed_at DESC
-        LIMIT $6 OFFSET $7;
+        LIMIT $3 OFFSET $4;
         `;
 
         const values = [
             ruleName || null,
             executionStatus || null,
-            rulePriority || null,
-            databaseType || null,
-            roles?.length ? roles : null,
             limit,
             offset,
         ];

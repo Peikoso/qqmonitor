@@ -3,7 +3,10 @@ import { ResponseAuditLogsDto } from '../dto/audit_logs/response-audit-logs-dto.
 
 export const AuditLogsController = {
     getAllAuditLogs: async (req, res) => {
-        const auditLogs = await AuditLogService.getAllAuditLogs();
+        const currentUserFirebaseUid = req.user.uid;
+        const { page, perPage } = req.query;
+
+        const auditLogs = await AuditLogService.getAllAuditLogs(currentUserFirebaseUid , page, perPage);
 
         const response = ResponseAuditLogsDto.fromArray(auditLogs);
 

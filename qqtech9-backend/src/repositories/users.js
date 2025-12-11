@@ -159,7 +159,7 @@ export const UsersRepository = {
     findEligibleUsersForEscalation: async (rolesId) => {
         const selectQuery = 
         `
-        SELECT
+        SELECT DISTINCT ON (u.id)
             u.id, u.name, u.email
         FROM users u
         LEFT JOIN users_roles ur 

@@ -81,7 +81,7 @@ export const IncidentService = {
         } catch(error){
             newIncident.assignedUserId = null;
         }
-
+        
         const savedIncident = await IncidentsRepository.create(newIncident);
 
         await NotificationService.createNotification({
@@ -100,29 +100,13 @@ export const IncidentService = {
 
         await AuthService.requireOperatorAndRole(user, incident.roles);
 
-        const oldIncident = JSON.parse(JSON.stringify(incident));
-
         const toUpdateIncident = new Incidents({
             ...incident,
             ...dto,
             updatedAt: new Date(),
         });
-        
-        await UserService.getUserById(toUpdateIncident.assignedUserId);
 
-        await IncidentsRepository.update(toUpdateIncident, client);
-        const updatedIncident = await IncidentsRepository.findById(incident.id, client);
-
-        const auditLog = {
-            entityId: incident.id,
-            entityType: 'incidents',
-            actionType: 'UPDATE',
-            oldValue: oldIncident,
-            newValue: updatedIncident,
-            userId: user.id
-        }
-
-        await AuditLogService.createAuditLog(auditLog, client);
+        const updatedIncident = await IncidentsRepository.update(toUpdateIncident, client);
 
         return updatedIncident;
     },
@@ -177,6 +161,23 @@ export const IncidentLogService = {
 
         const rule = await RuleService.getRuleById(incident.ruleId);
 
-        await RuleService.updateRule(rule.id, rule.reexecute(), currentUserFirebaseUid);
+        try{
+            await RuleService.updateRule(rule.id, rule.reexecute(), currentUserFirebaseUid);
+
+        } catch(error){
+            throw new Error('Failed to reexecute the rule associated with the incident.');
+            return;
+        }
+
+        const newIncidentsLogs = new IncidentsLogs({
+            incidentId: incident.id,
+            comment: 'Regra reexecutada manualmente.'
+        });
+
+        newIncidentsLogs.actionUserId = (await UserService.getSelf(currentUserFirebaseUid)).id;
+        newIncidentsLogs.previousStatus = incident.status;
+        newIncidentsLogs.currentStatus = 'REEXECUTED';
+
+        await IncidentsLogsRepository.create(newIncidentsLogs);
     }
 };
