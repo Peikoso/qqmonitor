@@ -1,5 +1,3 @@
-import { BusinessLogicError } from "../utils/errors.js";
-
 export class Notifications { 
     constructor(notification){
         this.id = notification.id;

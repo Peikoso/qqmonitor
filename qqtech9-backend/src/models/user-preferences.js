@@ -1,5 +1,3 @@
-import { BusinessLogicError } from "../utils/errors.js";
-
 export class UserPreferences {
     constructor(preferences) {
         this.id = preferences.id;

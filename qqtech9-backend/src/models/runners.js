@@ -1,5 +1,3 @@
-import { BusinessLogicError } from "../utils/errors.js";
-
 export class Runners {
     constructor(runner){
         this.id = runner.id;
