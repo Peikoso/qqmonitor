@@ -4,6 +4,7 @@ from datetime import datetime
 from models.runners import RunnerQueue
 from repositories.runners import RunnersRepository, RunnerQueueRepository
 from repositories.rules import RulesRepository
+from utils.redact import redact
 
 class RunnerScheduler:
     def __init__(self):
@@ -25,7 +26,7 @@ class RunnerScheduler:
             try:
                 await self.schedule_runners_to_queue()
             except Exception as error:
-                print(f'[Runner Scheduler] Erro no agendamento: {error}')
+                print(f'[Runner Scheduler] Erro no agendamento: {redact(error)}')
 
             await asyncio.sleep(self.check_interval)
 
@@ -48,7 +49,7 @@ class RunnerScheduler:
                     scheduled_count += 1
                 await asyncio.sleep(1)
             except Exception as error:
-                print(f'[Runner Scheduler] Erro ao agendar runner {runner.id}: {error}')
+                print(f'[Runner Scheduler] Erro ao agendar runner {runner.id}: {redact(error)}')
 
         if scheduled_count > 0:
             print(f'[Runner Scheduler] {scheduled_count} runner(s) agendado(s).')

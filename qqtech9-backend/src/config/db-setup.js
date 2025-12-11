@@ -5,6 +5,7 @@ import { config } from './index.js';
 import { pool } from './database-conn.js';
 import { admin } from './firebase.js'
 import { Users } from '../models/users.js';
+import { redact } from '../utils/redact.js';
 
 async function initDB() {
   try {
@@ -22,7 +23,7 @@ async function initDB() {
     await pool.query(sql);
     console.log('Banco inicializado com sucesso!');
   } catch (error) {
-    console.error('Erro ao inicializar o banco:', error);
+    console.error('Erro ao inicializar o banco:', redact(error));
   }
 }
 
@@ -42,7 +43,7 @@ async function insertDefaultData() {
         await pool.query(sql);  
     console.log('Dados padrão inseridos com sucesso!');
   } catch (error) {
-    console.error('Erro ao inserir dados padrão:', error);
+    console.error('Erro ao inserir dados padrão:', redact(error));
   }
 
 }
@@ -101,7 +102,7 @@ async function createAdminUser() {
 
         console.log('Admin user criado com sucesso:', new Users(result.rows[0]));
     } catch(error){
-        console.error(error);
+        console.error(redact(error));
 
         if(createdNow){
             await admin.auth().deleteUser(fireBaseUser.uid);

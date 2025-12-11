@@ -8,6 +8,7 @@ from repositories.rules import RulesRepository
 from sqlalchemy import text
 from config.database import get_session
 from config.index import API_URL, TOKEN_API
+from utils.redact import redact
 
 import requests
 
@@ -33,7 +34,7 @@ class RunnerWorker:
             try:
                 await self.process_runner_queue()
             except Exception as error:
-                print(f'[Runner Worker] Erro no processamento: {error}')
+                print(f'[Runner Worker] Erro no processamento: {redact(error)}')
             
             await asyncio.sleep(self.check_interval)
 
@@ -110,7 +111,7 @@ class RunnerWorker:
                     
                     print(f'[Runner Worker] Notificação enviada para API. Status code: {response.status_code}') 
                 except Exception as api_error:
-                    print(f'[Runner Worker] Erro ao notificar API: {str(api_error)}')   
+                    print(f'[Runner Worker] Erro ao notificar API: {redact(str(api_error))}')   
 
             self.log_metrics({
                 'queueId': queue_id,
@@ -123,7 +124,7 @@ class RunnerWorker:
 
         except Exception as error:
             run_time_ms = int((time.time() - start_time) * 1000)
-            print(f'[Runner Worker] Erro ao executar job {queue_id}: {str(error)}')
+            print(f'[Runner Worker] Erro ao executar job {queue_id}: {redact(str(error))}')
 
             execution_status = 'TIMEOUT' if 'timeout' in str(error).lower() else 'ERROR'
 
@@ -154,7 +155,7 @@ class RunnerWorker:
                 'runnerId': runner_id,
                 'runTimeMs': run_time_ms,
                 'status': 'ERROR',
-                'error': str(error)
+                'error': redact(str(error))
             })
 
     async def execute_sql_query(self, sql, timeout_ms):

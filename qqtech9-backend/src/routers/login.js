@@ -1,6 +1,7 @@
 import express from "express";
 import fetch from "node-fetch";
 import { config } from "../config/index.js";
+import { redact } from "../utils/redact.js";
 
 const router = express.Router();
 const API_KEY = config.FIREBASE_API_KEY; // do Firebase Console > Project settings > Web API Key
@@ -29,7 +30,7 @@ router.post("/", async (req, res) => {
     // Retorna apenas o token
     return res.json({ token: data.idToken });
   } catch (err) {
-    console.error(err);
+    console.error(redact(err));
     return res.status(500).json({ error: "Erro interno" });
   }
 });

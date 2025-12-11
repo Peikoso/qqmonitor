@@ -8,6 +8,7 @@ import { ValidateBodyMiddleware } from './middleware/validate-body-middleware.js
 import { config } from './config/index.js';
 import dbSetup from './config/db-setup.js';
 import helmet from 'helmet';
+import { redact } from './utils/redact.js';
 
 
 const app = express();
@@ -66,11 +67,11 @@ app.use(ErrorMiddleware);
 
 // Tratamento de erros não capturados
 process.on('unhandledRejection', (reason, promise) => {
-  console.error('Unhandled Rejection:', reason);
+  console.error('Unhandled Rejection:', redact(reason));
 });
 
 process.on('uncaughtException', err => {
-  console.error('Uncaught Exception:', err);
+  console.error('Uncaught Exception:', redact(err));
   // Em produção pode ser desejável reiniciar o processo  
 }); // sem esses handlers, a aplicação pode morrer sem logs claros, com eles você pelo menos registra o erro.
 

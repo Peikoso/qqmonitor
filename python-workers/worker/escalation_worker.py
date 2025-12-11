@@ -7,6 +7,7 @@ from repositories.rules import RulesRepository
 from models.escalation import EscalationSteps
 import requests
 from config.index import TOKEN_API, API_URL
+from utils.redact import redact
 
 class EscalationWorker:
     def __init__(self):
@@ -28,7 +29,7 @@ class EscalationWorker:
             try:
                 await self.process_escalations()
             except Exception as error:
-                print(f'[Escalation Worker] Erro no processamento: {error}')
+                print(f'[Escalation Worker] Erro no processamento: {redact(error)}')
 
             await asyncio.sleep(self.check_interval)
             
@@ -49,7 +50,7 @@ class EscalationWorker:
                 await self.escalate_incident(incident)
                 await asyncio.sleep(1) 
             except Exception as error:
-                print(f'[Escalation Worker] Erro ao escalar/notificar incidente {incident.id}: {error}')
+                print(f'[Escalation Worker] Erro ao escalar/notificar incidente {incident.id}: {redact(error)}')
                 
                 
                 
@@ -102,7 +103,7 @@ class EscalationWorker:
 
                 print(f'[Escalation Worker] Notificação enviada para API. Status code: {response.status_code}')                
             except Exception as api_error:
-                print(f'[Escalation Worker] Error ao notificar API: {str(api_error)}')
+                print(f'[Escalation Worker] Error ao notificar API: {redact(str(api_error))}')
             
         except Exception as error:
             if next_escalation_order < 3:
@@ -157,7 +158,7 @@ class EscalationWorker:
                 
                 print(f'[Escalation Worker] Notificação enviada para API. Status code: {response.status_code}')
             except Exception as api_error:
-                print(f'[Escalation Worker] Error ao notificar API: {str(api_error)}')
+                print(f'[Escalation Worker] Error ao notificar API: {redact(str(api_error))}')
             
     
 

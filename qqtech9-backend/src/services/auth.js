@@ -1,6 +1,7 @@
 import { admin } from "../config/firebase.js";
 import { UnauthorizedError } from "../utils/errors.js";
 import { ForbiddenError } from '../utils/errors.js';
+import { redact } from "../utils/redact.js";
 
 
 export const AuthService = {
@@ -9,7 +10,7 @@ export const AuthService = {
       const decodedToken = await admin.auth().verifyIdToken(idToken);
       return decodedToken;
     } catch (error) {
-      console.error("Error verifying Firebase token:", error.message);
+      console.error("Error verifying Firebase token:", redact(error.message));
       throw new UnauthorizedError("Invalid or expired token.");
     }
   },

@@ -6,6 +6,7 @@ import { RoleService } from './roles.js';
 import { AuthService } from './auth.js'
 import { admin } from '../config/firebase.js'
 import { config } from '../config/index.js';
+import { redact } from '../utils/redact.js';
 
 export const UserService = {
     getAllUsers: async (
@@ -103,7 +104,7 @@ export const UserService = {
 
             return savedUser;
         } catch(error){
-            console.error(error);
+            console.error(redact(error));
 
             await admin.auth().deleteUser(fireBaseUser.uid);
         }

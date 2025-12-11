@@ -1,6 +1,7 @@
 import { DBTestRepository } from '../repositories/db-test.js';
 import { AuthService } from './auth.js';
 import { DatabaseError } from '../utils/errors.js';
+import { redact } from '../utils/redact.js';
 
 export const DBTestService = {
     testDatabaseConnection: async (currentUserFirebaseUid) => {
@@ -13,7 +14,7 @@ export const DBTestService = {
             return dbTestResult;
 
         } catch(error){
-            console.error('Database connection test failed:', error);
+            console.error('Database connection test failed:', redact(error));
             throw new DatabaseError('Failed to connect to the database or retrieve information.');
         }
 
