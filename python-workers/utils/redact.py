@@ -1,6 +1,14 @@
 import re
 
 def redact(data):
+    if isinstance(data, Exception):
+        return {
+            'type': type(data).__name__,
+            'message': redact(str(data)),
+            'args': redact(data.args)
+        }
+    
+    
     if isinstance(data, str):
         result = data
         result = re.sub(r'password["\s:]*["\']?([^"\']+)["\']?', 'password: [REDACTED]', result, flags=re.IGNORECASE)

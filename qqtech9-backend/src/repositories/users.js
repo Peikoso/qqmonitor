@@ -177,6 +177,28 @@ export const UsersRepository = {
         return Users.fromArray(result.rows);
     },
 
+    checkIfExistsByEmailorMatricula: async (email = null, matricula = null, id = null) => {
+        if(!id) {
+            const result = await pool.query(`
+            SELECT 1 
+            FROM users
+            WHERE (email = $1 OR matricula = $2) 
+            `, 
+            [email, matricula]);
+
+            return result.rows.length > 0;
+        }
+        
+        const result = await pool.query(`
+        SELECT 1
+        FROM users
+        WHERE (email = $1 OR matricula = $2) AND id != $3
+        `, 
+        [email, matricula, id]);
+
+        return result.rows.length > 0;
+    },
+
     create: async(user) =>{
         const client =  await pool.connect();
         

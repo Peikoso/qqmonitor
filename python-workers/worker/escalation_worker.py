@@ -39,6 +39,10 @@ class EscalationWorker:
     
     async def process_escalations(self):
         escalation_policy = await EscalationRepository.get_policy()
+        if not escalation_policy or escalation_policy.timeout_ms is None:
+            print('[Escalation Worker] Nenhuma política de escalonamento encontrada.')
+            return
+        
         expired_incidents = await IncidentsRepository.find_expired_incidents(escalation_policy.timeout_ms)
         
         if(len(expired_incidents) == 0):

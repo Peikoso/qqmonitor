@@ -1,4 +1,12 @@
 function redact(data) {
+ if (data instanceof Error) {
+    return {
+      name: data.name,
+      message: redact(data.message),
+      stack: redact(data.stack || '')
+    };
+  }
+
   if (typeof data === 'string') {
     return data
         .replace(/email["\s:]*["\']?([^"\']+)["\']?/gi, 'email: [REDACTED]')

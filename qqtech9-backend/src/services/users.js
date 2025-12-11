@@ -1,6 +1,6 @@
 import { UsersRepository } from '../repositories/users.js';
 import { Users } from '../models/users.js';
-import { ValidationError, NotFoundError, ForbiddenError } from '../utils/errors.js';
+import { ValidationError, NotFoundError, ForbiddenError, ConflictError } from '../utils/errors.js';
 import { isValidUuid } from '../utils/validations.js';
 import { RoleService } from './roles.js';
 import { AuthService } from './auth.js'
@@ -79,11 +79,34 @@ export const UserService = {
         return user;
     },
 
+    checkEmail: async (email, id = null) => {
+        const existingUser = await UsersRepository.checkIfExistsByEmailorMatricula(email, null, id);
+
+        if(existingUser){
+            throw new ConflictError('User with given email already exists.');
+        }
+
+        return;
+    },
+
+    checkMatricula: async (matricula, id = null) => {
+        const existingUser = await UsersRepository.checkIfExistsByEmailorMatricula(null, matricula, id);
+
+        if(existingUser){
+            throw new ConflictError('User with given matricula already exists.');
+        }
+
+        return;
+    },
+
     createUser: async (dto, currentUserFirebaseUid) => {
         const currentUser = await UserService.getSelf(currentUserFirebaseUid);
         await AuthService.requireAdmin(currentUser);
 
         const newUser = new Users(dto).activate();
+
+        await UserService.checkEmail(newUser.email);
+        await UserService.checkMatricula(newUser.matricula);
 
         await AuthService.verifyRoles(currentUser, newUser.roles);
 
@@ -113,6 +136,9 @@ export const UserService = {
 
     registerUser: async (dto) => {
         const newUser = new Users(dto).markAsPending();
+
+        await UserService.checkEmail(newUser.email);
+        await UserService.checkMatricula(newUser.matricula);
 
         const savedUser = await UsersRepository.create(newUser);
 
@@ -145,9 +171,13 @@ export const UserService = {
     adminUpdateUser: async (id, dto, currentUserFirebaseUid) => {
         const currentUser = await UserService.getSelf(currentUserFirebaseUid);
         await AuthService.requireAdmin(currentUser);
-        
-        const existingUser = await UserService.getUserById(id);
 
+        const existingUser = await UserService.getUserById(id);
+        
+        if(dto.profile === 'admin' || existingUser.profile === 'admin'){
+            await AuthService.requireSuperAdmin(currentUser);
+        }
+        
         await AuthService.verifyRoles(currentUser, existingUser.roles);
         await AuthService.verifyRoles(currentUser, dto.roles);
 
@@ -160,6 +190,9 @@ export const UserService = {
             ...dto,
             updatedAt: new Date(),
         });
+
+        await UserService.checkEmail(updatedUser.email, updatedUser.id);
+        await UserService.checkMatricula(updatedUser.matricula, updatedUser.id);
 
         const savedUser = await UsersRepository.update(updatedUser);
 
@@ -181,6 +214,10 @@ export const UserService = {
         });
 
         updatedUser.rolesToIds();
+
+        
+        await UserService.checkEmail(updatedUser.email, updatedUser.id);
+        await UserService.checkMatricula(updatedUser.matricula, updatedUser.id);
 
         const savedUser = await UsersRepository.update(updatedUser);
 
@@ -205,6 +242,10 @@ export const UserService = {
         await AuthService.requireAdmin(currentUser);
 
         const existingUser = await UserService.getUserById(id);
+
+        if(existingUser.profile === 'admin'){
+            await AuthService.requireSuperAdmin(currentUser);
+        }
 
         await AuthService.verifyRoles(currentUser, existingUser.roles);
 

@@ -45,3 +45,11 @@ export class DatabaseError extends Error {
         this.status = 500; // Internal Server Error
     }
 }
+
+export class ConflictError extends Error {
+    constructor(message) {
+        super(message);
+        this.name = 'ConflictError';
+        this.status = 409; // Conflict
+    }
+}
