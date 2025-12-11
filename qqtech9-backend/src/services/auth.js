@@ -1,7 +1,7 @@
 import { admin } from "../config/firebase.js";
 import { UnauthorizedError } from "../utils/errors.js";
-import { UsersRepository } from '../repositories/users.js';
 import { ForbiddenError } from '../utils/errors.js';
+
 
 export const AuthService = {
   verifyToken: async (idToken) => {
@@ -14,14 +14,24 @@ export const AuthService = {
     }
   },
 
-  requireAdmin: async (firebaseUid) => {
-    const currentUser = await UsersRepository.findByFirebaseId(firebaseUid);
-
-    if (!currentUser) {
-      throw new UnauthorizedError('User not found.');
+  isSuperadmin: (user) => {
+    if(user.profile === 'admin'){
+      const isSuperAdmin = user.roles.some(role => role.isSuperadmin === true);
+      return isSuperAdmin;
     }
 
-    if (currentUser.profile !== 'admin') {
+    return false;
+  },
+
+  requireSuperAdmin: async (user) => {
+    if(!AuthService.isSuperadmin(user)){
+      throw new ForbiddenError('Insufficient permissions');
+    }
+
+  },
+
+  requireAdmin: async (user) => {
+    if (user.profile !== 'admin') {
       throw new ForbiddenError('Insufficient permissions');
     }
     
@@ -34,7 +44,7 @@ export const AuthService = {
   },
 
   requireOperatorAndRole: async (user, rolesId) => {    
-    if (user.profile === 'admin') {
+    if (AuthService.isSuperadmin(user)) {
       return;
     }
 
@@ -52,8 +62,22 @@ export const AuthService = {
     
   },
 
+  verifyRoles: async (user, rolesId) => {    
+    if (AuthService.isSuperadmin(user)) {
+      return;
+    }
+
+    const userRolesId = user.roles.map(role => role.id);
+
+    const hasInvalidRole = rolesId.some(roleId => !userRolesId.includes(roleId));
+
+    if (hasInvalidRole) {
+      throw new ForbiddenError('Insufficient permissions');
+    }
+  },
+
   requireRole: async (user, rolesId) => {    
-    if (user.profile === 'admin') {
+    if (AuthService.isSuperadmin(user)) {
       return;
     }
 
@@ -66,5 +90,33 @@ export const AuthService = {
     }
     
   },
+
+  editRoles: async (user, oldRolesIds, newRolesIds) => {
+    if(AuthService.isSuperadmin(user)){
+      return;
+    }
+
+    if(user.profile !== 'admin' ){
+      const sameLength = oldRolesIds.length === newRolesIds.length;
+
+      const sameRoles = oldRolesIds.every(roleId => newRolesIds.includes(roleId));
+      
+      if(!sameLength || !sameRoles){
+        throw new ForbiddenError('Insufficient permissions');
+      }
+    }
+
+    const addedRoles = newRolesIds.filter(roleId => !oldRolesIds.includes(roleId));
+
+    const removedRoles = oldRolesIds.filter(roleId => !newRolesIds.includes(roleId));
+
+    if(removedRoles.length > 0)
+      await AuthService.verifyRoles(user, removedRoles);
+
+    if(addedRoles.length > 0)
+      await AuthService.verifyRoles(user, addedRoles);
+
+  },
+
     
 };

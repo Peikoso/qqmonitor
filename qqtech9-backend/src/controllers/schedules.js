@@ -17,25 +17,13 @@ export const SchedulesController = {
 
     },
 
-    getScheduleById: async(req, res) => {
-        const currentUserFirebaseUid = req.user.uid;
-        const id = req.params.id;
-
-        const schedule = await ScheduleService.getScheduleById(id);
-
-        const response = new ResponseSchedulesDto(schedule);
-
-        return res.status(200).json(response);
-
-    },
-
     createSchedule: async(req, res) => {
         const currentUserFirebaseUid = req.user.uid;
         const scheduleData = req.body;
 
         const dto = new CreateSchedulesDto(scheduleData).validate();
 
-        const newSchedule = await ScheduleService.createSchedule(dto);
+        const newSchedule = await ScheduleService.createSchedule(dto, currentUserFirebaseUid);
 
         const response = new ResponseSchedulesDto(newSchedule);
 
@@ -49,7 +37,7 @@ export const SchedulesController = {
 
         const dto = new CreateSchedulesDto(scheduleData).validate();
 
-        const updatedSchedule = await ScheduleService.updateSchedule(id, dto);
+        const updatedSchedule = await ScheduleService.updateSchedule(id, dto, currentUserFirebaseUid);
 
         const response = new ResponseSchedulesDto(updatedSchedule);
 
@@ -60,7 +48,7 @@ export const SchedulesController = {
         const currentUserFirebaseUid = req.user.uid;
         const id = req.params.id;
 
-        await ScheduleService.deleteSchedule(id);
+        await ScheduleService.deleteSchedule(id, currentUserFirebaseUid);
 
         return res.status(204).send();
     }

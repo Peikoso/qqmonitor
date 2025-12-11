@@ -36,6 +36,9 @@ services:
       PORT: ${PORT}
       SERVICE_PATH: ${SERVICE_PATH}
       DEFAULT_PASSWORD: ${DEFAULT_PASSWORD}
+      FIREBASE_API_KEY: ${FIREBASE_API_KEY}
+      TOKEN_API: ${TOKEN_API}
+      CORS_ORIGIN: ${CORS_ORIGIN}
     env_file:
       - .env
     command: ["node", "src/main.js"]

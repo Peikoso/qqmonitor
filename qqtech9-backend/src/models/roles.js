@@ -4,6 +4,7 @@ export class Roles {
         this.name = role.name;
         this.color = role.color;
         this.description = role.description;
+        this.isSuperadmin = role.is_superadmin ?? role.isSuperadmin;
         this.createdAt = role.created_at ?? role.createdAt;
         this.updatedAt = role.updated_at ?? role.updatedAt;
     }

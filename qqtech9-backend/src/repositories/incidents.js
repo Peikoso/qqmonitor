@@ -3,7 +3,7 @@ import { Incidents, IncidentsLogs } from '../models/incidents.js'
 
 export const IncidentsRepository = {
     findAll: async (
-        status, ruleId, priority, profile, roles, roleId, limit, offset
+        status, ruleId, priority, isSuperAdmin, roles, roleId, limit, offset
     ) => {
         const selectQuery = 
         `
@@ -39,7 +39,7 @@ export const IncidentsRepository = {
             AND ($2::varchar IS NULL OR r.name ILIKE '%' || $2 || '%')
             AND ($3::varchar IS NULL OR i.priority = $3)
             AND (
-                $4::varchar = 'admin'
+                $4::boolean = true
                 OR (
                     $5::uuid[] IS NOT NULL
                     AND EXISTS (
@@ -68,7 +68,7 @@ export const IncidentsRepository = {
             status || null,
             ruleId || null,
             priority || null,
-            profile,
+            isSuperAdmin,
             roles?.length ? roles : null,
             roleId || null,
             limit,

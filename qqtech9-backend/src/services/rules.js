@@ -13,6 +13,8 @@ export const RuleService = {
         currentUserFirebaseUid, name, priority, databaseType, roleId, page, perPage
     ) => {
         const user = await UserService.getSelf(currentUserFirebaseUid);
+        const isSuperAdmin = AuthService.isSuperadmin(user);
+        await AuthService.requireOperator(user);
         
         const pageNumber = parseInt(page) > 0 ? parseInt(page) : 1;
         const limit = parseInt(perPage) > 0 ? parseInt(perPage) : 10;
@@ -21,7 +23,7 @@ export const RuleService = {
         const rules = await RulesRepository.findAll(
             name,
             priority,
-            user.profile,
+            isSuperAdmin,
             databaseType,
             user.roles.map(role => role.id),
             roleId,
@@ -47,7 +49,8 @@ export const RuleService = {
     },
 
     createRule: async (dto, currentUserFirebaseUid) => {
-        await AuthService.requireAdmin(currentUserFirebaseUid);
+        const user = await UserService.getSelf(currentUserFirebaseUid);
+        await AuthService.requireAdmin(user);
 
         const client = await pool.connect();
 
@@ -56,7 +59,7 @@ export const RuleService = {
 
             const newRule = new Rules(dto).validateBusinessLogic();
 
-            const user = await UserService.getSelf(currentUserFirebaseUid);
+            await AuthService.verifyRoles(user, newRule.roles);
 
             newRule.userCreatorId = user.id;
 
@@ -85,12 +88,16 @@ export const RuleService = {
         const existingRule = await RuleService.getRuleById(id);
         
         await AuthService.requireOperatorAndRole(user, existingRule.roles);
-        
+
+        await AuthService.editRoles(user, existingRule.roles, dto.roles);
+
         const updatedRule = new Rules({
             ...existingRule,
             ...dto,
             updatedAt: new Date()
         }).validateBusinessLogic();
+
+
 
         for(const roleId of updatedRule.roles){
             await RoleService.getRoleById(roleId);
@@ -124,9 +131,12 @@ export const RuleService = {
     },
 
     deleteRule: async (id, currentUserFirebaseUid) => {
-        await AuthService.requireAdmin(currentUserFirebaseUid);
+        const user = await UserService.getSelf(currentUserFirebaseUid);
+        await AuthService.requireAdmin(user);
 
-        await RuleService.getRuleById(id);
+        const rule = await RuleService.getRuleById(id);
+
+        await AuthService.verifyRoles(user, rule.roles);
         
         await RulesRepository.delete(id);
     }

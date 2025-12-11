@@ -3,10 +3,12 @@ import { ChannelsRepository } from "../repositories/channels.js";
 import { NotFoundError } from "../utils/errors.js";
 import { isValidUuid } from "../utils/validations.js";
 import { AuthService } from "./auth.js";
+import { UserService } from "./users.js";
 
 export const ChannelService = {
     getAllChannels: async (currentUserFirebaseUid) => {
-        await AuthService.requireAdmin(currentUserFirebaseUid);
+        const currentUser = await UserService.getSelf(currentUserFirebaseUid);
+        await AuthService.requireSuperAdmin(currentUser);
         
         const channels = await ChannelsRepository.findAll();
 
@@ -34,8 +36,9 @@ export const ChannelService = {
     },
 
     createChannel: async (dto, currentUserFirebaseUid) => {
-        await AuthService.requireAdmin(currentUserFirebaseUid);
-
+        const currentUser = await UserService.getSelf(currentUserFirebaseUid);
+        await AuthService.requireSuperAdmin(currentUser);
+        
         const newChannel = new Channels(dto);
 
         const savedChannel = await ChannelsRepository.create(newChannel);
@@ -44,8 +47,9 @@ export const ChannelService = {
     },
 
     updateChannel: async (id, dto, currentUserFirebaseUid) => {
-        await AuthService.requireAdmin(currentUserFirebaseUid);
-
+        const currentUser = await UserService.getSelf(currentUserFirebaseUid);
+        await AuthService.requireSuperAdmin(currentUser);
+        
         const existingChannel = await ChannelService.getChannelById(id);
 
         const updatedChannel = new Channels({
@@ -60,7 +64,8 @@ export const ChannelService = {
     },
 
     deleteChannel: async (id, currentUserFirebaseUid) => {
-        await AuthService.requireAdmin(currentUserFirebaseUid);
+        const currentUser = await UserService.getSelf(currentUserFirebaseUid);
+        await AuthService.requireSuperAdmin(currentUser);
 
         await ChannelService.getChannelById(id);
 

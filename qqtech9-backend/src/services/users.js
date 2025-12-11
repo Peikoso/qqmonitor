@@ -1,6 +1,6 @@
 import { UsersRepository } from '../repositories/users.js';
 import { Users } from '../models/users.js';
-import { ValidationError, NotFoundError } from '../utils/errors.js';
+import { ValidationError, NotFoundError, ForbiddenError } from '../utils/errors.js';
 import { isValidUuid } from '../utils/validations.js';
 import { RoleService } from './roles.js';
 import { AuthService } from './auth.js'
@@ -11,13 +11,17 @@ export const UserService = {
     getAllUsers: async (
         currentUserFirebaseUid, name, matricula, role, pending, profile, page, perPage
     ) => {
-        await AuthService.requireAdmin(currentUserFirebaseUid);
-        
+        const currentUser = await UserService.getSelf(currentUserFirebaseUid);
+        await AuthService.requireAdmin(currentUser);
+        const isSuperAdmin = AuthService.isSuperadmin(currentUser);
+
         const pageNumber = parseInt(page) > 0 ? parseInt(page) : 1;
         const limit = parseInt(perPage) > 0 ? parseInt(perPage) : 10;
         const offset = (pageNumber - 1) * limit;
 
         const users = await UsersRepository.findAll(
+            isSuperAdmin,
+            currentUser.roles.map(role => role.id),
             name, 
             matricula, 
             role, 
@@ -31,9 +35,15 @@ export const UserService = {
     },
 
     getAllwithBasicInfo: async (name, currentUserFirebaseUid) => {
-        await AuthService.requireAdmin(currentUserFirebaseUid);
+        const currentUser = await UserService.getSelf(currentUserFirebaseUid);
+        await AuthService.requireAdmin(currentUser);
+        const isSuperAdmin = AuthService.isSuperadmin(currentUser);
 
-        const users = await UsersRepository.findAllwithBasicInfo(name);
+        const users = await UsersRepository.findAllwithBasicInfo(
+            isSuperAdmin,
+            currentUser.roles.map(role => role.id),
+            name
+        );
 
         return users;
     },
@@ -69,9 +79,12 @@ export const UserService = {
     },
 
     createUser: async (dto, currentUserFirebaseUid) => {
-        await AuthService.requireAdmin(currentUserFirebaseUid)
+        const currentUser = await UserService.getSelf(currentUserFirebaseUid);
+        await AuthService.requireAdmin(currentUser);
 
         const newUser = new Users(dto).activate();
+
+        await AuthService.verifyRoles(currentUser, newUser.roles);
 
         const fireBaseUser = await admin.auth().createUser({
             email: newUser.email,
@@ -106,9 +119,12 @@ export const UserService = {
     },
 
     approveUser: async (userId, currentUserFirebaseUid) => {
-        await AuthService.requireAdmin(currentUserFirebaseUid);
+        const currentUser = await UserService.getSelf(currentUserFirebaseUid);
+        await AuthService.requireAdmin(currentUser);
 
-        const existingUser = await UserService.getUserById(userId, currentUserFirebaseUid);
+        const existingUser = await UserService.getUserById(userId);
+
+        await AuthService.verifyRoles(currentUser, existingUser.roles);
          
         const fireBaseUser = await admin.auth().createUser({
             email: existingUser.email,
@@ -126,9 +142,13 @@ export const UserService = {
     },
 
     adminUpdateUser: async (id, dto, currentUserFirebaseUid) => {
-        await AuthService.requireAdmin(currentUserFirebaseUid);
+        const currentUser = await UserService.getSelf(currentUserFirebaseUid);
+        await AuthService.requireAdmin(currentUser);
+        
+        const existingUser = await UserService.getUserById(id);
 
-        const existingUser = await UserService.getUserById(id, currentUserFirebaseUid);
+        await AuthService.verifyRoles(currentUser, existingUser.roles);
+        await AuthService.verifyRoles(currentUser, dto.roles);
 
         for(const roleId of dto.roles){
             await RoleService.getRoleById(roleId);
@@ -180,9 +200,16 @@ export const UserService = {
     },
 
     deleteUser: async (id, currentUserFirebaseUid) => {
-        await AuthService.requireAdmin(currentUserFirebaseUid);
+        const currentUser = await UserService.getSelf(currentUserFirebaseUid);
+        await AuthService.requireAdmin(currentUser);
 
-        const existingUser = await UserService.getUserById(id, currentUserFirebaseUid);
+        const existingUser = await UserService.getUserById(id);
+
+        await AuthService.verifyRoles(currentUser, existingUser.roles);
+
+        if(existingUser.profile === 'admin' && !AuthService.isSuperadmin(currentUser)){
+            throw new ForbiddenError('Only superadmin users can delete admin users.');
+        }
 
         await UsersRepository.delete(id);
 

@@ -7,10 +7,43 @@ import { ErrorMiddleware } from './middleware/error-middleware.js';
 import { ValidateBodyMiddleware } from './middleware/validate-body-middleware.js';
 import { config } from './config/index.js';
 import dbSetup from './config/db-setup.js';
+import helmet from 'helmet';
 
 
 const app = express();
-app.use(cors());
+
+app.use(helmet({
+  hsts: {
+    maxAge: 31536000,
+    includeSubDomains: true,
+  },
+  frameguard: {
+    action: 'deny'
+  },
+  contentSecurityPolicy: {
+    directives: {
+      defaultSrc: ["'self'"],
+      scriptSrc: ["'self'"],
+      styleSrc: ["'self'", "'unsafe-inline'"],
+      imgSrc: ["'self'", "data:"],
+      connectSrc: ["'self'"],
+      fontSrc: ["'self'"],
+      objectSrc: ["'none'"],
+      mediaSrc: ["'self'"],
+      frameSrc: ["'none'"],
+    },
+  },
+  referrerPolicy: {
+    policy: 'no-referrer'
+  }
+}));
+
+app.use(cors({
+  origin: config.CORS_ORIGIN,
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH'],
+}));
+
 app.use(express.json());
 app.use(AuthMiddleware);  // Comente para desativar a Auth (Vai quebrar praticamente todos endpoints, sendo necessarios alterações para funcionar sem Auth..)
 app.use(ValidateBodyMiddleware)
@@ -20,7 +53,7 @@ const PORT = config.PORT || 8000;
 // Iniciar o banco (criação de tabelas, inserção de dados e usuário admin)
 (async () => {
   await dbSetup.initDB();
-  await dbSetup.insertDefaultData();
+  //await dbSetup.insertDefaultData();
   await dbSetup.createAdminUser();
 })();
 

@@ -2,15 +2,16 @@
 -- Tabela roles
 -- Critério de unicidade: name
 -- ======================================
-INSERT INTO roles (name, color, description)
-SELECT d.name, d.color, d.description
+INSERT INTO roles (name, color, description, is_superadmin)
+SELECT d.name, d.color, d.description, d.is_superadmin::boolean
 FROM (VALUES
-    ('DBA', '#FF5733', 'Responsável pelo banco de dados'),
-    ('Supervisor', '#33C4FF', 'Supervisiona equipes e processos críticos'),
-    ('Operador', '#4CAF50', 'Operador de sistemas e monitoramento'),
-    ('Analista', '#FFC107', 'Analista de suporte técnico'),
-    ('Gerente', '#9C27B0', 'Gerente de operações e TI')
-) AS d(name, color, description)
+    ('SuperADM', '#FF5733', 'Administrador com privilégios totais', true),
+    ('DBA', '#33FF57', 'Administrador de banco de dados', false),
+    ('Supervisor', '#33C4FF', 'Supervisiona equipes e processos críticos', false),
+    ('Operador', '#4CAF50', 'Operador de sistemas e monitoramento', false),
+    ('Analista', '#FFC107', 'Analista de suporte técnico', false),
+    ('Gerente', '#9C27B0', 'Gerente de operações e TI', false)
+) AS d(name, color, description, is_superadmin)
 WHERE NOT EXISTS (SELECT 1 FROM roles WHERE name = d.name);
 
 -- ======================================
@@ -32,6 +33,12 @@ WHERE NOT EXISTS (SELECT 1 FROM users WHERE email = d.email);
 -- Tabela users_roles
 -- Critério de unicidade: user_id + role_id
 -- ======================================
+INSERT into users_roles (user_id, role_id)
+SELECT u.id, r.id
+FROM users u, roles r 
+WHERE u.email='admin@example.com' AND r.name='SuperADM'
+AND NOT EXISTS (SELECT 1 FROM users_roles WHERE user_id = u.id AND role_id = r.id);
+
 INSERT INTO users_roles (user_id, role_id)
 SELECT u.id, r.id 
 FROM users u, roles r 

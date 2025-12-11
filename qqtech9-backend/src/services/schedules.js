@@ -6,8 +6,10 @@ import { UserService } from "./users.js";
 import { AuthService } from "./auth.js";
 
 export const ScheduleService = {
-    getUpcomingSchedules: async (currentUserFirebaseUid, userName, roleId, page, perPage) => {
-        await AuthService.requireAdmin(currentUserFirebaseUid);
+    getUpcomingSchedules: async (currentUserFirebaseUid, userName, roleId, page, perPage) => {  
+        const currentUser = await UserService.getSelf(currentUserFirebaseUid);
+        await AuthService.requireAdmin(currentUser);
+        const isSuperAdmin = AuthService.isSuperadmin(currentUser);
 
         const pageNumber = parseInt(page) > 0 ? parseInt(page) : 1;
         const limit = parseInt(perPage) > 0 ? parseInt(perPage) : 10;
@@ -16,7 +18,13 @@ export const ScheduleService = {
         const nowLocal = new Date().toLocaleString('sv-SE');
 
         const schedules = await SchedulesRepository.findUpcomingSchedules(
-            nowLocal, userName, roleId, limit, offset
+            isSuperAdmin, 
+            currentUser.roles.map(role => role.id), 
+            nowLocal, 
+            userName, 
+            roleId, 
+            limit, 
+            offset
         );
         
         return schedules;
@@ -48,18 +56,34 @@ export const ScheduleService = {
         return schedule;
     },
 
-    createSchedule: async (dto) => {
+    createSchedule: async (dto, currentUserFirebaseUid) => {
+        const currentUser = await UserService.getSelf(currentUserFirebaseUid);
+        await AuthService.requireAdmin(currentUser);
+
         const newSchedule = new Schedules(dto);
 
-        await UserService.getUserById(newSchedule.userId);
+        const userScheduled = await UserService.getUserById(newSchedule.userId);
+
+        await AuthService.verifyRoles(currentUser, userScheduled.roles);
 
         const savedSchedule = await SchedulesRepository.create(newSchedule);
         
         return savedSchedule;
     },
 
-    updateSchedule: async (id, dto) => {
+    updateSchedule: async (id, dto, currentUserFirebaseUid) => {
+        const currentUser = await UserService.getSelf(currentUserFirebaseUid);
+        await AuthService.requireAdmin(currentUser);
+
         const existingSchedule = await ScheduleService.getScheduleById(id);
+
+        const userScheduled = await UserService.getUserById(existingSchedule.userId);
+
+        await AuthService.verifyRoles(currentUser, userScheduled.roles);
+
+        const newUserScheduled = await UserService.getUserById(dto.userId);
+
+        await AuthService.verifyRoles(currentUser, newUserScheduled.roles);
 
         const updatedSchedule  = new Schedules({
             ...existingSchedule,
@@ -72,8 +96,15 @@ export const ScheduleService = {
         return savedSchedule;
     },
 
-    deleteSchedule: async (id) => {
-        await ScheduleService.getScheduleById(id);
+    deleteSchedule: async (id, currentUserFirebaseUid) => {
+        const currentUser = await UserService.getSelf(currentUserFirebaseUid);
+        await AuthService.requireAdmin(currentUser);
+
+        const existingSchedule = await ScheduleService.getScheduleById(id);
+
+        const userScheduled = await UserService.getUserById(existingSchedule.userId);
+
+        await AuthService.verifyRoles(currentUser, userScheduled.roles);
 
         await SchedulesRepository.delete(id);
     }

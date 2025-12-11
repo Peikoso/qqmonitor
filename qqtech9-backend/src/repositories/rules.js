@@ -3,7 +3,7 @@ import { Rules } from '../models/rules.js';
 
 export const RulesRepository = {
     findAll: async (
-        name, priority, profile, databaseType, roles, roleId, limit, offset
+        name, priority, isSuperAdmin, databaseType, roles, roleId, limit, offset
     ) => {
         const selectQuery = `
         SELECT 
@@ -28,7 +28,7 @@ export const RulesRepository = {
             AND ($2::varchar IS NULL OR r.priority = $2)
             AND ($3::varchar IS NULL OR r.database_type = $3)
             AND (
-                $4::varchar = 'admin'
+                $4::boolean = true
                 OR (
                     $5::uuid[] IS NOT NULL
                     AND EXISTS (
@@ -57,7 +57,7 @@ export const RulesRepository = {
             name || null,
             priority || null,
             databaseType || null,
-            profile,
+            isSuperAdmin,
             roles?.length ? roles : null,
             roleId || null,
             limit,

@@ -4,6 +4,7 @@ export class ResponseRolesDto {
         this.name = role.name;
         this.color = role.color;
         this.description = role.description;
+        this.isSuperadmin = role.isSuperadmin;
     }
 
     static fromArray(rolesArray) {

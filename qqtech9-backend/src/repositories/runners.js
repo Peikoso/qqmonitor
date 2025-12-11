@@ -3,7 +3,7 @@ import { Runners, RunnerQueue, RunnerLogs } from '../models/runners.js';
 
 export const RunnersRepository = {
     findAllPaginatedWithFilters: async (
-        ruleName, status, priority, databaseType, profile, roles, limit, offset
+        ruleName, status, priority, databaseType, isSuperAdmin, roles, limit, offset
     ) => {
         const selectQuery = 
         `
@@ -26,7 +26,7 @@ export const RunnersRepository = {
             AND ($3::varchar IS NULL OR rl.priority = $3)
             AND ($4::varchar IS NULL OR rl.database_type = $4)
             AND (
-                $5::varchar = 'admin'
+                $5::boolean = true
                 OR (
                     $6::uuid[] IS NOT NULL
                     AND EXISTS (
@@ -48,7 +48,7 @@ export const RunnersRepository = {
             status || null,
             priority || null,
             databaseType || null,
-            profile,
+            isSuperAdmin,
             roles?.length ? roles : null,
             limit,
             offset,
@@ -131,7 +131,7 @@ export const RunnersRepository = {
 
 export const RunnerQueueRepository = {
     findAll: async (
-        ruleName, status, rulePriority, profile, roles, limit, offset
+        ruleName, status, rulePriority, isSuperAdmin, roles, limit, offset
     ) => {
         const selectQuery =
         `
@@ -153,7 +153,7 @@ export const RunnerQueueRepository = {
             AND ($2::varchar IS NULL OR rq.status = $2)
             AND ($3::varchar IS NULL OR rl.priority = $3)
             AND (
-                $4::varchar = 'admin'
+                $4::boolean = true
                 OR (
                     $5::uuid[] IS NOT NULL
                     AND EXISTS (
@@ -173,7 +173,7 @@ export const RunnerQueueRepository = {
             ruleName || null,
             status || null,
             rulePriority || null,
-            profile,
+            isSuperAdmin,
             roles?.length ? roles : null,
             limit,
             offset,
@@ -259,7 +259,7 @@ export const RunnerQueueRepository = {
 
 export const RunnerLogsRepository = {
     findAll: async (
-        ruleName, executionStatus, rulePriority, databaseType, limit, offset
+        ruleName, executionStatus, rulePriority, databaseType, roles, limit, offset
     ) => {
         const selectQuery =
         `
@@ -283,9 +283,18 @@ export const RunnerLogsRepository = {
             AND ($2::varchar IS NULL OR rlogs.execution_status = $2)
             AND ($3::varchar IS NULL OR rl.priority = $3)
             AND ($4::varchar IS NULL OR rl.database_type = $4)
+            AND (
+                $5::uuid[] IS NOT NULL
+                AND EXISTS (
+                    SELECT 1
+                    FROM rules_roles rr_auth
+                    WHERE rr_auth.rule_id = rl.id
+                    AND rr_auth.role_id = ANY($5::uuid[])
+                )
+            )
         GROUP BY rlogs.id
         ORDER BY executed_at DESC
-        LIMIT $5 OFFSET $6;
+        LIMIT $6 OFFSET $7;
         `;
 
         const values = [
@@ -293,6 +302,7 @@ export const RunnerLogsRepository = {
             executionStatus || null,
             rulePriority || null,
             databaseType || null,
+            roles?.length ? roles : null,
             limit,
             offset,
         ];

@@ -2,7 +2,7 @@ import { pool } from '../config/database-conn.js';
 import { Users } from '../models/users.js'
 
 export const UsersRepository = {
-    findAll: async (name, matricula, role, pending, profile, limit, offset) => {
+    findAll: async (isSuperadmin, adminRoles, name, matricula, role, pending, profile, limit, offset) => {
         const selectQuery =
         `
         SELECT 
@@ -23,17 +23,28 @@ export const UsersRepository = {
         LEFT JOIN roles r
             ON ur.role_id = r.id
         WHERE
-            ($1::varchar IS NULL OR u.name ILIKE '%' || $1 || '%')
-            AND ($2::varchar IS NULL OR u.matricula ILIKE '%' || $2 || '%')
-            AND ($3::uuid IS NULL OR r.id = $3)
-            AND ($4::boolean IS NULL OR u.pending = $4)
-            AND ($5::varchar IS NULL OR u.profile = $5)
+            (
+                $1::boolean = true
+                OR NOT EXISTS (
+                    SELECT 1
+                    FROM users_roles ur2
+                    WHERE ur2.user_id = u.id
+                    AND ur2.role_id NOT IN (SELECT unnest($2::uuid[]))
+                )
+            )
+            AND ($3::varchar IS NULL OR u.name ILIKE '%' || $3 || '%')
+            AND ($4::varchar IS NULL OR u.matricula ILIKE '%' || $4 || '%')
+            AND ($5::uuid IS NULL OR r.id = $5)
+            AND ($6::boolean IS NULL OR u.pending = $6)
+            AND ($7::varchar IS NULL OR u.profile = $7)
         GROUP BY u.id
         ORDER BY created_at DESC
-        LIMIT $6 OFFSET $7;
+        LIMIT $8 OFFSET $9;
         `;
 
         const values = [
+            isSuperadmin,
+            adminRoles,
             name || null, 
             matricula || null,
             role || null,
@@ -79,7 +90,8 @@ export const UsersRepository = {
                     jsonb_build_object(
                         'id', r.id,
                         'name', r.name,
-                        'color', r.color
+                        'color', r.color,
+                        'isSuperadmin', r.is_superadmin
                     )
                 ) FILTER (WHERE r.id IS NOT NULL),
                     '[]'::jsonb
@@ -102,7 +114,9 @@ export const UsersRepository = {
         return new Users(result.rows[0]);
     },
 
-    findAllwithBasicInfo: async (name) => {
+    findAllwithBasicInfo: async (
+        isSuperadmin, adminRoles, name
+    ) => {
         const selectQuery = 
         `
         SELECT 
@@ -123,13 +137,22 @@ export const UsersRepository = {
         LEFT JOIN roles r
             ON ur.role_id = r.id
         WHERE
-            u.pending = false 
-            AND ($1::varchar IS NULL OR u.name ILIKE '%' || $1 || '%')
+            (
+                $1::boolean = true
+                OR NOT EXISTS (
+                    SELECT 1
+                    FROM users_roles ur2
+                    WHERE ur2.user_id = u.id
+                    AND ur2.role_id NOT IN (SELECT unnest($2::uuid[]))
+                )
+            )
+            AND u.pending = false
+            AND u.profile != 'viewer' 
+            AND ($3::varchar IS NULL OR u.name ILIKE '%' || $3 || '%')
         GROUP BY u.id;
         `;
 
-        const result = await pool.query(selectQuery, [name || null]);
-
+        const result = await pool.query(selectQuery, [isSuperadmin, adminRoles, name || null]);
         return Users.fromArray(result.rows);
     },
 
@@ -240,6 +263,13 @@ export const UsersRepository = {
 
                 if (key === 'updatedAt') {
                     fields.push(`updated_at = $${i}`);
+                    values.push(value);
+                    i++;
+                    continue;
+                }
+
+                if (key === 'fcmToken') {
+                    fields.push(`fcm_token = $${i}`);
                     values.push(value);
                     i++;
                     continue;

@@ -9,6 +9,7 @@ CREATE TABLE IF NOT EXISTS roles (
     name varchar(20) NOT NULL,
     color varchar(20) NOT NULL,
     description varchar(150) NOT NULL,
+    is_superadmin boolean NOT NULL DEFAULT false,
     created_at timestamp NOT NULL DEFAULT now(),
     updated_at timestamp NOT NULL DEFAULT now()
 );
@@ -279,18 +280,6 @@ CREATE TABLE IF NOT EXISTS escalation_steps (
     result varchar(20) NOT NULL, -- SUCCESS, FAILED, NOTIFIED ADMINS
     CONSTRAINT fk_escalation_incident FOREIGN KEY (incident_id) REFERENCES incidents(id) ON DELETE CASCADE,
     CONSTRAINT fk_escalation_user FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE SET NULL
-);
-
--- ======================================
--- Tabela app_settings
--- ======================================
-CREATE TABLE IF NOT EXISTS app_settings (
-    key TEXT PRIMARY KEY,
-    value jsonb NOT NULL,
-    created_at TIMESTAMP NOT NULL DEFAULT now(),
-    updated_at TIMESTAMP NOT NULL DEFAULT now(),
-    updated_by_user_id uuid,
-    CONSTRAINT fk_app_settings_user FOREIGN KEY (updated_by_user_id) REFERENCES users(id) ON DELETE SET NULL
 );
 
 -- ======================================

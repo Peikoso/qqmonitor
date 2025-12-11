@@ -2,10 +2,14 @@ import { EscalationPolicy } from "../models/escalation-policies.js";
 import { EscalationPoliciesRepository } from "../repositories/escalation-policies.js";
 import { NotFoundError } from "../utils/errors.js";
 import { AuthService } from "./auth.js";
+import { UserService } from "./users.js";
 
 
 export const EscalationPolicyService = {
-    getEscalationPolicy: async () => {
+    getEscalationPolicy: async (currentUserFirebaseUid) => {
+        const user = await UserService.getSelf(currentUserFirebaseUid);
+        await AuthService.requireAdmin(user);
+
         const escalationPolicy = await EscalationPoliciesRepository.find();
 
         if (!escalationPolicy) {
@@ -16,7 +20,8 @@ export const EscalationPolicyService = {
     },
 
     createEscalationPolicy: async (dto, currentUserFirebaseUid) => {
-        await AuthService.requireAdmin(currentUserFirebaseUid);
+        const user = await UserService.getSelf(currentUserFirebaseUid);
+        await AuthService.requireSuperAdmin(user);
 
         const newEscalationPolicy = new EscalationPolicy(dto).validateBusinessLogic();
 
@@ -26,9 +31,10 @@ export const EscalationPolicyService = {
     },
 
     updateEscalationPolicy: async (dto, currentUserFirebaseUid) => {
-        await AuthService.requireAdmin(currentUserFirebaseUid);
+        const user = await UserService.getSelf(currentUserFirebaseUid);
+        await AuthService.requireSuperAdmin(user);
 
-        const existingEscalationPolicy = await EscalationPolicyService.getEscalationPolicy();
+        const existingEscalationPolicy = await EscalationPolicyService.getEscalationPolicy(currentUserFirebaseUid);
 
         const updatedEscalationPolicy = new EscalationPolicy({
             ...existingEscalationPolicy,
@@ -42,7 +48,8 @@ export const EscalationPolicyService = {
     },
 
     deleteEscalationPolicy: async (id, currentUserFirebaseUid) => {
-        await AuthService.requireAdmin(currentUserFirebaseUid);
+        const currentUser = await UserService.getSelf(currentUserFirebaseUid);
+        await AuthService.requireSuperAdmin(currentUser);
 
         await EscalationPolicyService.getEscalationPolicyById(id);
 

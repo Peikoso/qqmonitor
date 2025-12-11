@@ -9,6 +9,7 @@ import { AuthService } from './auth.js';
 export const RoleService = {
     getAllRoles: async (currentUserFirebaseUid, name, page, perPage) => {
         const currentUser = await UserService.getSelf(currentUserFirebaseUid);
+        const isSuperAdmin = AuthService.isSuperadmin(currentUser);
 
         const userRoles = currentUser.roles.map(role => role.id);
 
@@ -16,12 +17,18 @@ export const RoleService = {
         const limit = parseInt(perPage) > 0 ? parseInt(perPage) : 10;
         const offset = (pageNumber - 1) * limit;
 
-        const roles = await RolesRepository.findAll(currentUser.profile, userRoles, name, limit, offset);
+        const roles = await RolesRepository.findAll(
+            isSuperAdmin, 
+            userRoles, 
+            name, 
+            limit, 
+            offset
+        );
         
         return roles;
     },
 
-    getRoleById: async (id, currentUserFirebaseUid) => {
+    getRoleById: async (id) => {
         if(!isValidUuid(id)){
             throw new ValidationError('Invalid Role UUID.');
         }
@@ -36,7 +43,8 @@ export const RoleService = {
     },
 
     createRole: async (dto, currentUserFirebaseUid) => {
-        await AuthService.requireAdmin(currentUserFirebaseUid);
+        const currentUser = await UserService.getSelf(currentUserFirebaseUid);
+        await AuthService.requireSuperAdmin(currentUser);
 
         const newRole = new Roles(dto);
 
@@ -46,9 +54,14 @@ export const RoleService = {
     },
 
     updateRole: async (id, dto, currentUserFirebaseUid) => {
-        await AuthService.requireAdmin(currentUserFirebaseUid);
+        const currentUser = await UserService.getSelf(currentUserFirebaseUid);
+        await AuthService.requireSuperAdmin(currentUser);
 
-        const existingRole = await RoleService.getRoleById(id, currentUserFirebaseUid);
+        const existingRole = await RoleService.getRoleById(id);
+
+        if(existingRole.name === 'SuperADM'){
+            throw new ValidationError('Cannot update SuperADM role.');
+        }
 
         const updatedRole = new Roles({
             ...existingRole,
@@ -62,9 +75,14 @@ export const RoleService = {
     },
 
     deleteRole: async (id, currentUserFirebaseUid) => {
-        await AuthService.requireAdmin(currentUserFirebaseUid);
+        const currentUser = await UserService.getSelf(currentUserFirebaseUid);
+        await AuthService.requireSuperAdmin(currentUser);
 
-        await RoleService.getRoleById(id, currentUserFirebaseUid);
+        const role = await RoleService.getRoleById(id);
+
+        if(role.name === 'SuperADM'){
+            throw new ValidationError('Cannot delete SuperADM role.');
+        }
         
         await RolesRepository.delete(id);
     }

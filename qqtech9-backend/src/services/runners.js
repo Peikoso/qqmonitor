@@ -9,7 +9,9 @@ export const RunnerService = {
         currentUserFirebaseUid, ruleName, status, priority, databaseType, page, perPage
     ) => {
         const user = await UserService.getSelf(currentUserFirebaseUid);
+        const isSuperAdmin = AuthService.isSuperadmin(user);
         await AuthService.requireOperator(user);
+        
 
         const pageNumber = parseInt(page) > 0 ? parseInt(page) : 1;
         const limit = parseInt(perPage) > 0 ? parseInt(perPage) : 10;
@@ -20,7 +22,7 @@ export const RunnerService = {
             status, 
             priority, 
             databaseType,
-            user.profile, 
+            isSuperAdmin, 
             user.roles.map(role => role.id),
             limit, 
             offset
@@ -49,6 +51,7 @@ export const RunnerQueueService = {
         currentUserFirebaseUid, ruleName, status, rulePriority, page, perPage
     ) => {
         const user = await UserService.getSelf(currentUserFirebaseUid);
+        const isSuperAdmin = AuthService.isSuperadmin(user);
         await AuthService.requireOperator(user);
 
         const pageNumber = parseInt(page) > 0 ? parseInt(page) : 1;
@@ -59,7 +62,7 @@ export const RunnerQueueService = {
             ruleName, 
             status, 
             rulePriority,
-            user.profile, 
+            isSuperAdmin, 
             user.roles.map(role => role.id), 
             limit, 
             offset
@@ -74,14 +77,21 @@ export const RunnerLogService = {
     getAllRunnersLogs: async (
         currentUserFirebaseUid, ruleName, executionStatus, rulePriority, databaseType, page, perPage
     ) => {
-        await AuthService.requireAdmin(currentUserFirebaseUid);
+        const user = await UserService.getSelf(currentUserFirebaseUid);
+        await AuthService.requireAdmin(user);
 
         const pageNumber = parseInt(page) > 0 ? parseInt(page) : 1;
         const limit = parseInt(perPage) > 0 ? parseInt(perPage) : 10;
         const offset = (pageNumber - 1) * limit;
 
         const runnersLogs = await RunnerLogsRepository.findAll(
-            ruleName, executionStatus, rulePriority, databaseType, limit, offset
+            ruleName,
+            executionStatus, 
+            rulePriority, 
+            databaseType,
+            user.roles.map(role => role.id), 
+            limit, 
+            offset
         );
 
         return runnersLogs;

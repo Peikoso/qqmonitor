@@ -14,6 +14,7 @@ import { AuditLogService } from "./audit-logs.js";
 export const IncidentService = {
     getAllIncidents: async (currentUserFirebaseUid, status, ruleName, priority, roleId, page, perPage) => {
         const user = await UserService.getSelf(currentUserFirebaseUid);
+        const isSuperAdmin = AuthService.isSuperadmin(user);
         
         const pageNumber = parseInt(page) > 0 ? parseInt(page) : 1;
         const limit = parseInt(perPage) > 0 ? parseInt(perPage) : 10;
@@ -23,7 +24,7 @@ export const IncidentService = {
             status, 
             ruleName, 
             priority,
-            user.profile,
+            isSuperAdmin,
             user.roles.map(role => role.id),
             roleId, 
             limit,

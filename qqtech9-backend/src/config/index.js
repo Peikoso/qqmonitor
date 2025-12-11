@@ -11,5 +11,6 @@ export const config = {
     ENABLE_RUNNER_WORKER: process.env.ENABLE_RUNNER_WORKER,
     FIREBASE_API_KEY: process.env.FIREBASE_API_KEY,
     TOKEN_API: process.env.TOKEN_API,
+    CORS_ORIGIN: process.env.CORS_ORIGIN,
 };
 

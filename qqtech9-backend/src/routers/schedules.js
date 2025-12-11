@@ -4,7 +4,6 @@ import { SchedulesController } from '../controllers/schedules.js';
 const router = express.Router();
 
 router.get('/', SchedulesController.getUpcomingSchedules);
-router.get('/:id', SchedulesController.getScheduleById);
 router.post('/', SchedulesController.createSchedule);
 router.patch('/:id', SchedulesController.updateSchedule);
 router.delete('/:id', SchedulesController.deleteSchedule);

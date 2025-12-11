@@ -4,7 +4,8 @@ import { DatabaseError } from '../utils/errors.js';
 
 export const DBTestService = {
     testDatabaseConnection: async (currentUserFirebaseUid) => {
-        await AuthService.requireAdmin(currentUserFirebaseUid);
+        const currentUser = await AuthService.verifyToken(currentUserFirebaseUid);
+        await AuthService.requireAdmin(currentUser);
         
         try{
             const dbTestResult = await DBTestRepository.testConnection();

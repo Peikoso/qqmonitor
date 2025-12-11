@@ -2,7 +2,9 @@ import { pool } from '../config/database-conn.js';
 import { Schedules } from '../models/schedules.js';
 
 export const SchedulesRepository = {
-    findUpcomingSchedules: async (nowLocal, userName, roleId, limit, offset) => {
+    findUpcomingSchedules: async (
+        isSuperadmin, adminRoles, nowLocal, userName, roleId, limit, offset
+    ) => {
         const selectQuery = 
         `
         SELECT 
@@ -29,16 +31,27 @@ export const SchedulesRepository = {
             ON u.id = ur.user_id
         LEFT JOIN roles r
             ON ur.role_id = r.id
-        WHERE 
-            (s.end_time >= $1)
-            AND ($2::varchar IS NULL OR u.name ILIKE '%' || $2 || '%')
-            AND ($3::uuid IS NULL OR r.id = $3::uuid)
+        WHERE
+            (
+                $1::boolean = true
+                OR NOT EXISTS (
+                    SELECT 1
+                    FROM users_roles ur2
+                    WHERE ur2.user_id = u.id
+                    AND ur2.role_id NOT IN (SELECT unnest($2::uuid[]))
+                )
+            ) 
+            AND (s.end_time >= $3)
+            AND ($4::varchar IS NULL OR u.name ILIKE '%' || $4 || '%')
+            AND ($5::uuid IS NULL OR r.id = $5::uuid)
         GROUP BY s.id, u.id 
         ORDER BY start_time ASC, end_time ASC
-        LIMIT $4 OFFSET $5;
+        LIMIT $6 OFFSET $7;
         `;
 
         const values = [
+            isSuperadmin,
+            adminRoles,
             nowLocal,
             userName || null,
             roleId || null,

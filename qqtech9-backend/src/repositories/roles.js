@@ -2,18 +2,18 @@ import { pool } from '../config/database-conn.js';
 import { Roles } from '../models/roles.js';
 
 export const RolesRepository = {
-    findAll: async (profile, roles, name, limit, offset) => {
+    findAll: async (isSuperadmin, roles, name, limit, offset) => {
         const selectQuery = 
         `
         SELECT * FROM roles
         WHERE 
-            ($1::varchar = 'admin' OR id = ANY($2::uuid[]))
+            ($1::boolean = true OR id = ANY($2::uuid[]))
             AND ($3::varchar IS NULL OR name ILIKE '%' || $3 || '%')
         ORDER BY created_at DESC
         LIMIT $4 OFFSET $5;
         `
         const values = [
-            profile,
+            isSuperadmin,
             roles?.length ? roles : null,
             name || null,
             limit || 99999,
@@ -45,15 +45,16 @@ export const RolesRepository = {
         const insertRoleQuery = 
         `
         INSERT INTO roles
-        (name, color, description)
-        VALUES ($1, $2, $3)
+        (name, color, description, is_superadmin)
+        VALUES ($1, $2, $3, $4)
         RETURNING *;
         `;
 
         const values = [
             roleData.name,
             roleData.color,
-            roleData.description
+            roleData.description, 
+            roleData.isSuperadmin
         ];
         
         const roleDB = await pool.query(insertRoleQuery, values);
@@ -68,8 +69,9 @@ export const RolesRepository = {
         SET name = $1,
             color = $2,
             description = $3,
-            updated_at = $4
-        WHERE id = $5
+            is_superadmin = $4,
+            updated_at = $5
+        WHERE id = $6
         RETURNING *;
         `;
 
@@ -77,6 +79,7 @@ export const RolesRepository = {
             roleData.name,
             roleData.color,
             roleData.description,
+            roleData.isSuperadmin,
             roleData.updatedAt, 
             roleData.id
         ];

@@ -6,7 +6,7 @@ export const EscalationPoliciesController = {
     getEscalationPolicy: async (req, res) => {
         const currentUserFirebaseUid = req.user.uid;
 
-        const escalationPolicy= await EscalationPolicyService.getEscalationPolicy();
+        const escalationPolicy= await EscalationPolicyService.getEscalationPolicy(currentUserFirebaseUid);
 
         const response = new ResponseEscalationPolicy(escalationPolicy);
 
@@ -43,7 +43,7 @@ export const EscalationPoliciesController = {
         const currentUserFirebaseUid = req.user.uid;
         const id = req.params.id;
 
-        await EscalationPolicyService.deleteEscalationPolicy(id);
+        await EscalationPolicyService.deleteEscalationPolicy(id, currentUserFirebaseUid);
 
         return res.status(204).send();
     },

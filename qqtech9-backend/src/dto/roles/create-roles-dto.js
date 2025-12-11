@@ -5,6 +5,7 @@ export class CreateRolesDto {
         this.name = role.name?.trim();
         this.color = role.color?.trim();
         this.description = role.description?.trim();
+        this.isSuperadmin = role.isSuperadmin;
     }
     
     validate() {
@@ -18,6 +19,9 @@ export class CreateRolesDto {
         }
         if (typeof this.description !== 'string' || this.description.trim() === '') {
             throw new ValidationError('Description must be a non-empty string');
+        }
+        if (typeof this.isSuperadmin !== 'boolean') {
+            throw new ValidationError('isSuperadmin must be a boolean value');
         }
         if(this.name.length > 20){
             throw new ValidationError('Role name cannot exceed 20 characters');
