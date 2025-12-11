@@ -1,5 +1,5 @@
 import { BusinessLogicError } from "../utils/errors.js";
-import { sqlValidantion } from '../utils/validations.js';
+import { validateSQLQueryAST, validateSQLQueryRegex } from '../utils/sql-validation.js';
 
 export class Rules {
     constructor(rule) {
@@ -36,8 +36,11 @@ export class Rules {
     }
 
     validateBusinessLogic() {
-        if (!sqlValidantion(this.sql)) {
+        if (!validateSQLQueryRegex(this.sql)) {
             throw new BusinessLogicError('SQL contains forbidden commands');
+        }
+        if (validateSQLQueryAST(this.sql).valid === false) {
+            throw new BusinessLogicError(`${validateSQLQueryAST(this.sql).error}`);
         }
         if (this.postponeDate && new Date(this.postponeDate) < new Date()) {
             throw new BusinessLogicError('Postpone date must be in the future');
