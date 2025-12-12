@@ -126,7 +126,6 @@ export const UsersController = {
     updateFcmToken: async (req, res) => {
         const currentUserFirebaseUid = req.user.uid;
         const fcmTokenData = req.body;
-        console.log()
 
         const dto = new FcmTokenDto(fcmTokenData).validate();
 

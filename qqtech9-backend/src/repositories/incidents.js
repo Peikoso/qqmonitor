@@ -189,7 +189,7 @@ export const IncidentsLogsRepository = {
         return IncidentsLogs.fromArray(result.rows);
     },
 
-    create: async(incidentsLogs, client) => {
+    create: async(incidentsLogs, client = pool) => {
         const insertIncidentsLogsQuery =
         `
         INSERT INTO incidents_events

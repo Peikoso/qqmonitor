@@ -8,7 +8,6 @@ import { UserService } from "./users.js";
 import { RuleService } from "./rules.js";
 import { ScheduleService } from "./schedules.js";
 import { NotificationService } from "./notifications.js";
-import { AuditLogService } from "./audit-logs.js";
 
 
 export const IncidentService = {
@@ -157,6 +156,7 @@ export const IncidentLogService = {
     },
 
     reexecuteIncidentRule: async (incidentId, currentUserFirebaseUid) => {
+        const user = await UserService.getSelf(currentUserFirebaseUid);
         const incident = await IncidentService.getIncidentById(incidentId);
 
         const rule = await RuleService.getRuleById(incident.ruleId);
@@ -173,7 +173,7 @@ export const IncidentLogService = {
             comment: 'Regra reexecutada manualmente.'
         });
 
-        newIncidentsLogs.actionUserId = (await UserService.getSelf(currentUserFirebaseUid)).id;
+        newIncidentsLogs.actionUserId = user.id;
         newIncidentsLogs.previousStatus = incident.status;
         newIncidentsLogs.currentStatus = 'REEXECUTED';
 

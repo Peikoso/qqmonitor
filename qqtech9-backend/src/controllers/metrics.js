@@ -16,8 +16,6 @@ export const MetricsController = {
 
         const metrics = await MetricService.getMetrics(startDate, endDate, currentUserFirebaseUid);
 
-        console.log(metrics);
-
         return res.status(200).json(metrics);
     }
 };
