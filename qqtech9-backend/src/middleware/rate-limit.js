@@ -2,7 +2,7 @@ import ratelimit from 'express-rate-limit';
 
 export const GlobalLimiter = ratelimit({
     windowMs: 15 * 60 * 1000, // 15 min
-    max: 100, 
+    max: 1000, 
     standardHeaders: true,
     legacyHeaders: false,
     message: 'Too many requests from this IP, please try again later.'
