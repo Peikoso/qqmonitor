@@ -13,7 +13,7 @@ def calculate_metrics(start_date, end_date):
     incidents_df = pd.read_sql("""
         SELECT id, status, created_at, ack_at, closed_at, rule_id 
         FROM incidents 
-        WHERE created_at BETWEEN %(start_date)s AND %(end_date)s
+        WHERE DATE(created_at) BETWEEN %(start_date)s AND %(end_date)s
     """, engine, params={"start_date": start_date, "end_date": end_date})
     
     for col in ['created_at', 'ack_at', 'closed_at']:
@@ -22,7 +22,7 @@ def calculate_metrics(start_date, end_date):
     runner_logs_df = pd.read_sql("""
         SELECT execution_status, executed_at, runner_id
         FROM runner_logs 
-        WHERE executed_at BETWEEN %(start_date)s AND %(end_date)s
+        WHERE DATE(executed_at) BETWEEN %(start_date)s AND %(end_date)s
     """, engine, params={"start_date": start_date, "end_date": end_date})
     
     runner_logs_df['executed_at'] = pd.to_datetime(runner_logs_df['executed_at'], errors='coerce')
@@ -30,19 +30,21 @@ def calculate_metrics(start_date, end_date):
     escalation_df = pd.read_sql("""
         SELECT incident_id, escalation_order
         FROM escalation_steps
-        WHERE escalated_at BETWEEN %(start_date)s AND %(end_date)s
+        WHERE DATE(escalated_at) BETWEEN %(start_date)s AND %(end_date)s
     """, engine, params={"start_date": start_date, "end_date": end_date})
     
     notifications_df = pd.read_sql("""
         SELECT id, sent_at
         FROM notifications 
-        WHERE created_at BETWEEN %(start_date)s AND %(end_date)s
+        WHERE DATE(created_at) BETWEEN %(start_date)s AND %(end_date)s
     """, engine, params={"start_date": start_date, "end_date": end_date})
     
     notifications_df['sent_at'] = pd.to_datetime(notifications_df['sent_at'], errors='coerce')
     
     rules_df = pd.read_sql("SELECT is_active FROM rules", engine)
     
+    runner_logs_sucess_count = (runner_logs_df['execution_status'] == 'SUCCESS').sum()
+
     metrics = {
         'total_incidentes': int(len(incidents_df),),
         
@@ -55,11 +57,11 @@ def calculate_metrics(start_date, end_date):
             (incidents_df['closed_at'] - incidents_df['created_at'])
             .dt.total_seconds() / 60
         ).mean(),
-        
+         
         'taxa_erro_regra': (
-            (runner_logs_df['execution_status'] == 'ERROR').sum() 
-            / len(runner_logs_df) * 100
-        ) if len(runner_logs_df) > 0 else 0,
+            len(incidents_df)
+            / runner_logs_sucess_count * 100
+        ) if runner_logs_sucess_count > 0   else 0,
         
         'tempo_medio_entre_incidentes': (
             incidents_df.sort_values('created_at')['created_at']

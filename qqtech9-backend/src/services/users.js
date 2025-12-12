@@ -7,6 +7,9 @@ import { AuthService } from './auth.js'
 import { admin } from '../config/firebase.js'
 import { config } from '../config/index.js';
 import { redact } from '../utils/redact.js';
+import path from 'path';
+import fs from 'fs/promises';
+import { uploadDir } from '../config/file-upload.js';
 
 export const UserService = {
     getAllUsers: async (
@@ -225,6 +228,27 @@ export const UserService = {
             email: savedUser.email,
             displayName: savedUser.name
         })
+
+        return savedUser;
+    },
+
+    uploadSelfPicuture: async (filename, currentUserFirebaseUid) => {
+        const user = await UserService.getSelf(currentUserFirebaseUid);
+
+        if(user.picture){
+            const oldPicturePath = path.resolve(uploadDir, user.picture);
+
+            try{
+                await fs.unlink(oldPicturePath)
+
+            } catch(err) {
+                if(err.code !== 'ENOENT'){
+                    console.error(`Error deleting old picture file: ${redact(err)}`);
+                }
+            };
+        }
+
+        const savedUser = await UsersRepository.updatePicture(user.id, filename);
 
         return savedUser;
     },

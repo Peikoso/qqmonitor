@@ -11,7 +11,7 @@ import { NotificationService } from "./notifications.js";
 
 
 export const IncidentService = {
-    getAllIncidents: async (currentUserFirebaseUid, status, ruleName, priority, roleId, page, perPage) => {
+    getAllIncidents: async (currentUserFirebaseUid, status, ruleName, priority, roleId, ownIncidents, page, perPage) => {
         const user = await UserService.getSelf(currentUserFirebaseUid);
         const isSuperAdmin = AuthService.isSuperadmin(user);
         
@@ -25,7 +25,8 @@ export const IncidentService = {
             priority,
             isSuperAdmin,
             user.roles.map(role => role.id),
-            roleId, 
+            roleId,
+            ownIncidents ? user.id : null, 
             limit,
             offset
         );

@@ -15,6 +15,7 @@ import auditLogsRouter from './audit-logs.js';
 import dbTestRouter from './db-test.js';
 import loginRouter from './login.js';
 import metricsRouter from './metrics.js';
+import { uploadDir } from '../config/file-upload.js';
 
 const router = express.Router();
 
@@ -33,5 +34,10 @@ router.use('/audit-logs', auditLogsRouter);
 router.use('/db-test', dbTestRouter);
 router.use('/login', loginRouter);
 router.use('/metrics', metricsRouter);
+router.use('/uploads', express.static(uploadDir, {
+    setHeaders: (res) => {
+        res.setHeader('Cross-Origin-Resource-Policy', 'cross-origin');
+    }
+}));
 
 export default router;

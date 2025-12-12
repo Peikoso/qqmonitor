@@ -123,6 +123,20 @@ export const UsersController = {
         return res.status(200).json(response);
     },
 
+    uploadSelfPicuture: async (req, res) => {
+        const currentUserFirebaseUid = req.user.uid;
+
+        if (!req.file) {
+            return res.status(400).json({ message: 'No file uploaded' });
+        }
+
+        const updatedUser = await UserService.uploadSelfPicuture(req.file.filename, currentUserFirebaseUid);
+
+        const response = new ResponseUsersDto(updatedUser);
+
+        return res.status(200).json(response);
+    },
+
     updateFcmToken: async (req, res) => {
         const currentUserFirebaseUid = req.user.uid;
         const fcmTokenData = req.body;

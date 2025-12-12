@@ -4,7 +4,7 @@ import { config } from "../config/index.js";
 
 const publicRoutes = [
   { method: 'POST', path: '/api/v1/users/register' },
-  { method: 'POST', path: '/api/v1/login' }
+  { method: 'POST', path: '/api/v1/login' },
 ];
 
 const tokenRoutes = [
@@ -13,6 +13,10 @@ const tokenRoutes = [
 ];
 
 export const AuthMiddleware = async (req, res, next) => {
+  if (req.method === 'GET' && req.path.startsWith('/api/v1/uploads')) {
+    return next();
+  }
+
   const isPublic = publicRoutes.some(
     route => route.method === req.method && req.path === route.path
   )

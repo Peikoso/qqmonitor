@@ -333,6 +333,19 @@ export const UsersRepository = {
         }
     },
 
+    updatePicture: async (id, filename) => {
+        const updatePictureQuery = `
+            UPDATE users
+            SET picture = $1, updated_at = NOW()
+            WHERE id = $2
+            RETURNING *;
+        `;
+        
+        const result = await pool.query(updatePictureQuery, [filename, id]);
+
+        return new Users(result.rows[0]);
+    },
+
     updateFcmToken: async (id, fcmToken) => {
         const updateFcmTokenQuery = `
             UPDATE users

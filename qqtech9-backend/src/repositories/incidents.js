@@ -3,7 +3,7 @@ import { Incidents, IncidentsLogs } from '../models/incidents.js'
 
 export const IncidentsRepository = {
     findAll: async (
-        status, ruleId, priority, isSuperAdmin, roles, roleId, limit, offset
+        status, ruleId, priority, isSuperAdmin, roles, roleId, userId, limit, offset
     ) => {
         const selectQuery = 
         `
@@ -59,9 +59,10 @@ export const IncidentsRepository = {
                     AND rr_filter.role_id = $6
                 )
             )
+            AND ($7::uuid IS NULL OR i.assigned_user_id = $7)
         GROUP BY i.id, r.id
         ORDER BY i.created_at DESC
-        LIMIT $7 OFFSET $8;
+        LIMIT $8 OFFSET $9;
         `;
 
         const values = [
@@ -71,6 +72,7 @@ export const IncidentsRepository = {
             isSuperAdmin,
             roles?.length ? roles : null,
             roleId || null,
+            userId || null,
             limit,
             offset,
         ];

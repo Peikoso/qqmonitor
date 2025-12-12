@@ -1,6 +1,7 @@
 import { UsersController } from '../controllers/users.js';
 import express from 'express';
 import { RegisterLimiter } from '../middleware/rate-limit.js';
+import upload from '../config/file-upload.js';
 
 const router = express.Router();
 
@@ -12,6 +13,7 @@ router.post('/', UsersController.createUser);
 router.post('/register', RegisterLimiter, UsersController.registerUser);
 router.post('/:userId/approve', UsersController.approveUser)
 router.patch('/me', UsersController.userUpdateSelf);
+router.patch('/me/picture', upload.single('picture'), UsersController.uploadSelfPicuture);
 router.patch('/fcm-token', UsersController.updateFcmToken);
 router.patch('/:id', UsersController.adminUpdateUser);
 router.delete('/:id', UsersController.deleteUser);

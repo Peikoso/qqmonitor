@@ -52,15 +52,13 @@ export class UpdateUsersDto {
     constructor(user){
         this.name = user.name?.trim();
         this.email = user.email?.trim();
-        this.phone = Number(user.phone);
-        this.picture = user.picture?.trim();
+        this.phone = String(user.phone);
     }
 
     validate() {
-        const CELULAR_REGEX = /^(?:\+55\s?)?(?:\(?\d{2}\)?\s?)?(?:9\d{4}[-]?\d{4})$/;
+        const CELULAR_REGEX = /^(\d{2})(\d{5})(\d{4})$/;
         const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
         const NAME_REGEX = /^[A-Za-zÀ-ÿ]+(?:\s[A-Za-zÀ-ÿ]+)*$/;
-        const URL_REGEX = /^https?:\/\/.+/;
 
         if(typeof this.name !== 'string' || this.name.trim() === '') {
             throw new ValidationError('Name is required and must be a non-empty string');
@@ -86,12 +84,7 @@ export class UpdateUsersDto {
         if(this.phone && this.phone.length > 20 ){
             throw new ValidationError('Phone cannot exceed 20 characters');
         }
-        if(this.picture && this.picture.length > 255 ){
-            throw new ValidationError('Picture URL cannot exceed 255 characters');
-        }
-        if(this.picture && !URL_REGEX.test(this.picture)){
-            throw new ValidationError('Invalid picture URL format');
-        }
+
 
         return this;
     }

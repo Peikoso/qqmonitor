@@ -6,7 +6,7 @@ import { UpdateIncidentForManualEscalationDto } from '../dto/incidents/update-in
 export const IncidentsController = {
     getAllIncidents: async(req, res) => {
         const currentUserFirebaseUid = req.user.uid;
-        const { status, ruleName, priority, roleId, page, perPage } = req.query;
+        const { status, ruleName, priority, roleId, ownIncidents, page, perPage } = req.query;
 
         const incidents = await IncidentService.getAllIncidents(
             currentUserFirebaseUid,
@@ -14,6 +14,7 @@ export const IncidentsController = {
             ruleName, 
             priority, 
             roleId,
+            ownIncidents,
             page, 
             perPage
         );
