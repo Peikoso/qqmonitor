@@ -26,6 +26,7 @@ export class ResponseUsersBasicDto {
         this.email = user.email;
         this.profile = user.profile;
         this.roles = user.roles;
+        this.picture = user.picture;
     }
     
     static fromArray(usersArray) {

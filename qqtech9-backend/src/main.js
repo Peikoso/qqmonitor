@@ -10,9 +10,13 @@ import dbSetup from './config/db-setup.js';
 import helmet from 'helmet';
 import { redact } from './utils/redact.js';
 import { GlobalLimiter } from './middleware/rate-limit.js';
+import { createServer } from 'http';
+import { initWebSocket } from './websocket/socket.js';
 
 
 const app = express();
+const httpServer = createServer(app);
+
 
 app.use(helmet({
   hsts: {
@@ -83,7 +87,11 @@ process.on('uncaughtException', err => {
   // Em produção pode ser desejável reiniciar o processo  
 }); // sem esses handlers, a aplicação pode morrer sem logs claros, com eles você pelo menos registra o erro.
 
-// Start
-app.listen(PORT, () => {
+
+
+initWebSocket(httpServer);
+
+httpServer.listen(PORT, () => {
   console.log(`API rodando em http://localhost:${PORT}`);
 });
+

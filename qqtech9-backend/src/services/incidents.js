@@ -2,12 +2,13 @@ import { pool } from "../config/database-conn.js";
 import { IncidentsRepository, IncidentsLogsRepository } from "../repositories/incidents.js";
 import { Incidents, IncidentsLogs } from '../models/incidents.js';
 import { isValidUuid } from "../utils/validations.js";
-import { ValidationError, NotFoundError } from "../utils/errors.js";
+import { ValidationError, NotFoundError, BusinessLogicError, ForbiddenError } from "../utils/errors.js";
 import { AuthService } from "./auth.js";
 import { UserService } from "./users.js";
 import { RuleService } from "./rules.js";
 import { ScheduleService } from "./schedules.js";
 import { NotificationService } from "./notifications.js";
+import { getIO } from "../websocket/socket.js";
 
 
 export const IncidentService = {
@@ -91,6 +92,9 @@ export const IncidentService = {
             userId: savedIncident.assignedUserId
         });
 
+        const io = getIO();
+        io.emit('incidentUpdated');
+
         return savedIncident;
     },
     
@@ -107,6 +111,9 @@ export const IncidentService = {
         });
 
         const updatedIncident = await IncidentsRepository.update(toUpdateIncident, client);
+
+        const io = getIO();
+        io.emit('incidentUpdated');
 
         return updatedIncident;
     },
@@ -166,6 +173,14 @@ export const IncidentLogService = {
             await RuleService.updateRule(rule.id, rule.reexecute(), currentUserFirebaseUid);
 
         } catch(error){
+            if( 
+                error instanceof NotFoundError 
+                || error instanceof BusinessLogicError 
+                || error instanceof ForbiddenError
+            ){
+                throw error;
+            }
+
             throw new Error('Failed to reexecute the rule associated with the incident.');
         }
 
@@ -179,5 +194,8 @@ export const IncidentLogService = {
         newIncidentsLogs.currentStatus = 'REEXECUTED';
 
         await IncidentsLogsRepository.create(newIncidentsLogs);
+
+        const io = getIO();
+        io.emit('incidentUpdated');
     }
 };

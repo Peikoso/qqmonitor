@@ -13,5 +13,6 @@ export const config = {
     TOKEN_API: process.env.TOKEN_API,
     CORS_ORIGIN: process.env.CORS_ORIGIN,
     METRICS_API_URL: process.env.METRICS_API_URL,
+    SOCKET_PORT: process.env.SOCKET_PORT,
 };
 

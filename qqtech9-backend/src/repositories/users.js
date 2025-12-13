@@ -120,7 +120,7 @@ export const UsersRepository = {
         const selectQuery = 
         `
         SELECT 
-            u.id, u.name, u.matricula, u.email, u.profile,
+            u.id, u.name, u.matricula, u.email, u.profile, u.picture,
             COALESCE(
                     jsonb_agg(
                         jsonb_build_object(
