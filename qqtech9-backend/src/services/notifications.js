@@ -7,6 +7,7 @@ import { UserPreferenceService } from "./user-preferences.js";
 import { IncidentService } from "./incidents.js";
 import { notificationDispatcher } from "./notification-dispatcher.js";
 import { isWithinTimeRange } from '../utils/time-utils.js'
+import { getIO } from "../websocket/socket.js";
 
 export const NotificationService = {
     getNotificationById: async (id) => {
@@ -35,10 +36,16 @@ export const NotificationService = {
     createNotification: async (notificationData) => {
         await IncidentService.getIncidentById(notificationData.incidentId);
         let userPreferences;
+        let user;
         
         try{
             if(!notificationData.userId){
                 throw new NotFoundError('No user assigned to the incident.');
+            }
+
+            const user = await UserService.getUserById(notificationData.userId);
+            if(!user){
+                throw new NotFoundError('User assigned to the incident not found.');
             }
             
             userPreferences = await UserPreferenceService.getUserPreferencesByUserId(notificationData.userId);
@@ -99,6 +106,9 @@ export const NotificationService = {
                 await NotificationsRepository.create(notification);
             }
         }
+
+        const io = getIO();
+        io.to(`user_${user?.firebaseId}`).emit('newNotification');
     },
 
     updateNotification: async (id, dto, currentUserFirebaseUid) => {

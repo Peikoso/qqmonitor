@@ -69,7 +69,7 @@ export const NotificationsRepository = {
             status = $1,
             read_at = $2,
             error = $3
-        WHERE id = $4
+        WHERE incident_id = $4
         RETURNING *;
         `;
 
@@ -77,7 +77,7 @@ export const NotificationsRepository = {
             notification.status,
             notification.readAt,
             notification.error,
-            notification.id,
+            notification.incidentId,
         ];
 
         const result = await pool.query(updateQuery, values);
